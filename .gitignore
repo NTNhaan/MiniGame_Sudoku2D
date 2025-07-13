@@ -1,0 +1,30 @@
+# ========== Unity generated files ==========
+Library/
+Temp/
+Obj/
+Logs/
+MemoryCaptures/
+Build/
+Builds/
+UserSettings/
+
+# ========== IDE specific ==========
+.vscode/
+.idea/
+*.sln
+*.csproj
+*.unityproj
+*.user
+*.suo
+*.tmp
+*.userprefs
+*.pidb
+*.booproj
+*.svd
+
+# ========== OS specific ==========
+.DS_Store
+Thumbs.db
+
+# ========== Crash Reports ==========
+sysinfo.txt
