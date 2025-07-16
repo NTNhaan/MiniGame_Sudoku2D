@@ -7,13 +7,14 @@ public class BoardController : MonoBehaviour
     [SerializeField] private int columns = 0;
     [SerializeField] private int rows = 0;
     [SerializeField] private GameObject square;
-    private List<GameObject> lstSquare;
-    private float square_offset = 2.5f;
-    private float square_scale = 1.0f;
+    [SerializeField] private float square_offset = 2.5f;
+    [SerializeField] private float square_scale = 1.0f;
     [SerializeField] private Vector2 startPos;
+    private List<GameObject> lstSquare;
 
     void Start()
     {
+        lstSquare = new List<GameObject>();
         CreateBoardGame();
         SetBoardNumber();
     }

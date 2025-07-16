@@ -5,12 +5,6 @@ public class Square : Selectable
 {
     [SerializeField] private GameObject textNumber;
     private int number = 0;
-    void Start()
-    {
-
-    }
-
-    // Update is called once per frame
     void Update()
     {
 
