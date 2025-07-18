@@ -11,7 +11,7 @@ public class Square : Selectable
     }
     public void DisplayText()
     {
-        if (number < 0)
+        if (number <= 0)
         {
             textNumber.GetComponent<Text>().text = " ";
         }

@@ -4,7 +4,8 @@ using Utils;
 
 public class LevelData : Singleton<LevelData>
 {
-    [SerializeField] private Dictionary<string, List<BoardData>> gameDir;
+    public Dictionary<string, List<BoardData>> gameDir;
+    public
     void Start()
     {
         gameDir = new Dictionary<string, List<BoardData>>();

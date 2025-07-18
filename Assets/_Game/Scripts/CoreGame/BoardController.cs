@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using Unity.Android.Gradle.Manifest;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -11,12 +12,15 @@ public class BoardController : MonoBehaviour
     [SerializeField] private float square_scale = 1.0f;
     [SerializeField] private Vector2 startPos;
     private List<GameObject> lstSquare;
+    private List<Square> lstSquareComponents; // Cache Square components
+    private int selected_data = -1;
 
     void Start()
     {
         lstSquare = new List<GameObject>();
+        lstSquareComponents = new List<Square>();
         CreateBoardGame();
-        SetBoardNumber();
+        SetBoardNumber("Easy");
     }
     private void CreateBoardGame()
     {
@@ -29,9 +33,14 @@ public class BoardController : MonoBehaviour
         {
             for (int column = 0; column < columns; column++)
             {
-                lstSquare.Add(Instantiate(square));
-                lstSquare[lstSquare.Count - 1].transform.parent = this.transform;
-                lstSquare[lstSquare.Count - 1].transform.localScale = new Vector3(square_scale, square_scale, square_scale);
+                GameObject newSquare = Instantiate(square);
+                lstSquare.Add(newSquare);
+                newSquare.transform.parent = this.transform;
+                newSquare.transform.localScale = new Vector3(square_scale, square_scale, square_scale);
+
+                // Cache Square component để tránh GetComponent
+                Square squareComponent = newSquare.GetComponent<Square>();
+                lstSquareComponents.Add(squareComponent);
             }
         }
     }
@@ -58,11 +67,20 @@ public class BoardController : MonoBehaviour
         }
 
     }
-    private void SetBoardNumber()
+    private void SetBoardNumber(string level)
     {
-        foreach (var square in lstSquare)
+        selected_data = Random.Range(0, LevelData.Intance.gameDir[level].Count);
+        var data = LevelData.Intance.gameDir[level][selected_data];
+
+        SetBoardSquareData(data);
+    }
+
+    private void SetBoardSquareData(BoardData data)
+    {
+        for (int i = 0; i < lstSquareComponents.Count; i++)
         {
-            square.GetComponent<Square>().SetNumber(Random.Range(0, 10));
+            // Sử dụng cached Square component thay vì GetComponent
+            lstSquareComponents[i].SetNumber(data.unsolved_data[i]);
         }
     }
 }
