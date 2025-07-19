@@ -11,21 +11,29 @@ public class LoadingManager : MonoBehaviour
 
     public void Start()
     {
-        StartCoroutine(LoadingSceneFixedTime(NEXT_SCENE));
+        LoadEasyGame(NEXT_SCENE);
+        // StartCoroutine(LoadingSceneFixedTime(NEXT_SCENE));
     }
-
-    public IEnumerator LoadSceneAsync(string sceneName)
+    public void ActivateObject(GameObject obj)
     {
-        AsyncOperation operation = SceneManager.LoadSceneAsync(sceneName);
-        while (!operation.isDone)
-        {
-            float progress = Mathf.Clamp01(operation.progress / 0.9f);
-            progressBar.GetComponent<Image>().fillAmount = progress;
-            textPercent.text = (progress * 100).ToString("0") + "%";
-
-            yield return null;
-        }
+        obj.SetActive(true);
     }
+    public void DeActivateObject(GameObject obj)
+    {
+        obj.SetActive(false);
+    }
+    // public IEnumerator LoadSceneAsync(string sceneName)
+    // {
+    //     AsyncOperation operation = SceneManager.LoadSceneAsync(sceneName);
+    //     while (!operation.isDone)
+    //     {
+    //         float progress = Mathf.Clamp01(operation.progress / 0.9f);
+    //         progressBar.GetComponent<Image>().fillAmount = progress;
+    //         textPercent.text = (progress * 100).ToString("0") + "%";
+
+    //         yield return null;
+    //     }
+    // }
     public IEnumerator LoadingSceneFixedTime(string sceneName)
     {
         float elapsedTime = 0f;
@@ -40,4 +48,60 @@ public class LoadingManager : MonoBehaviour
         }
         SceneManager.LoadScene(sceneName);
     }
+
+
+    #region Load Level Game
+    private void LoadEasyGame(string name)
+    {
+        Debug.Log("Loading level easy");
+        if (GameConfigSetting.Instance != null)
+        {
+            GameConfigSetting.Instance.SetGameMode(GameConfigSetting.EGameMode.EASY);
+        }
+        else
+        {
+            Debug.LogError("GameConfigSetting.Instance is null!");
+        }
+        StartCoroutine(LoadingSceneFixedTime(name));
+    }
+    private void LoadMediumGame(string name)
+    {
+        Debug.Log("Loading level Medium");
+        if (GameConfigSetting.Instance != null)
+        {
+            GameConfigSetting.Instance.SetGameMode(GameConfigSetting.EGameMode.MEDIUM);
+        }
+        else
+        {
+            Debug.LogError("GameConfigSetting.Instance is null!");
+        }
+        StartCoroutine(LoadingSceneFixedTime(name));
+    }
+    private void LoadHardGame(string name)
+    {
+        Debug.Log("Loading level hard");
+        if (GameConfigSetting.Instance != null)
+        {
+            GameConfigSetting.Instance.SetGameMode(GameConfigSetting.EGameMode.HARD);
+        }
+        else
+        {
+            Debug.LogError("GameConfigSetting.Instance is null!");
+        }
+        StartCoroutine(LoadingSceneFixedTime(name));
+    }
+    private void LoadImpossibleGame(string name)
+    {
+        Debug.Log("Loading level Impossible");
+        if (GameConfigSetting.Instance != null)
+        {
+            GameConfigSetting.Instance.SetGameMode(GameConfigSetting.EGameMode.IMPOSSIBLE);
+        }
+        else
+        {
+            Debug.LogError("GameConfigSetting.Instance is null!");
+        }
+        StartCoroutine(LoadingSceneFixedTime(name));
+    }
+    #endregion
 }

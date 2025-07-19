@@ -4,14 +4,14 @@ namespace Utils
 {
     public class Singleton<T> : MonoBehaviour where T : Component
     {
-        private static T intance;
-        public static T Intance => intance;
+        private static T instance;
+        public static T Instance => instance;
         [SerializeField] protected bool _dontDestroyOnLoad;
         void Awake()
         {
-            if (intance == null)
+            if (instance == null)
             {
-                intance = this as T;
+                instance = this as T;
                 if (_dontDestroyOnLoad)
                 {
                     DontDestroyOnLoad(gameObject);

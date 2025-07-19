@@ -20,7 +20,7 @@ public class BoardController : MonoBehaviour
         lstSquare = new List<GameObject>();
         lstSquareComponents = new List<Square>();
         CreateBoardGame();
-        SetBoardNumber("Easy");
+        SetBoardNumber(GameConfigSetting.Instance.GetGameMode());
     }
     private void CreateBoardGame()
     {
@@ -69,8 +69,8 @@ public class BoardController : MonoBehaviour
     }
     private void SetBoardNumber(string level)
     {
-        selected_data = Random.Range(0, LevelData.Intance.gameDir[level].Count);
-        var data = LevelData.Intance.gameDir[level][selected_data];
+        selected_data = Random.Range(0, LevelData.Instance.gameDir[level].Count);
+        var data = LevelData.Instance.gameDir[level][selected_data];
 
         SetBoardSquareData(data);
     }

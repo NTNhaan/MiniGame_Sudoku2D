@@ -5,7 +5,6 @@ using Utils;
 public class LevelData : Singleton<LevelData>
 {
     public Dictionary<string, List<BoardData>> gameDir;
-    public
     void Start()
     {
         gameDir = new Dictionary<string, List<BoardData>>();
