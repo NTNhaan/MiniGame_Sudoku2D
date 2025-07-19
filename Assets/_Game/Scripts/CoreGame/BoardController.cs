@@ -29,6 +29,7 @@ public class BoardController : MonoBehaviour
     }
     private void SpawnSquare()
     {
+        int square_index = 0;
         for (int row = 0; row < rows; row++)
         {
             for (int column = 0; column < columns; column++)
@@ -38,9 +39,11 @@ public class BoardController : MonoBehaviour
                 newSquare.transform.parent = this.transform;
                 newSquare.transform.localScale = new Vector3(square_scale, square_scale, square_scale);
 
-                // Cache Square component để tránh GetComponent
                 Square squareComponent = newSquare.GetComponent<Square>();
                 lstSquareComponents.Add(squareComponent);
+
+                squareComponent.SetSquareIndex(square_index);
+                square_index++;
             }
         }
     }
@@ -79,7 +82,6 @@ public class BoardController : MonoBehaviour
     {
         for (int i = 0; i < lstSquareComponents.Count; i++)
         {
-            // Sử dụng cached Square component thay vì GetComponent
             lstSquareComponents[i].SetNumber(data.unsolved_data[i]);
         }
     }
