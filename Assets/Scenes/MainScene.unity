@@ -10183,10 +10183,11 @@ MonoBehaviour:
   PanelScoreText: {fileID: 2492672970823372433}
   HighScoreText: {fileID: 2252787336460321075}
   scoreManager: {fileID: 744446035}
-  imgStatus: {fileID: 1420087490}
-  sprStatusPause:
-  - {fileID: -1900045934, guid: 98bbe140934791c42aa91bb1783e0e19, type: 3}
-  - {fileID: 1956793356, guid: 98bbe140934791c42aa91bb1783e0e19, type: 3}
+  lstImgHealth:
+  - {fileID: 1591610697}
+  - {fileID: 1905491885}
+  - {fileID: 140133017}
+  imgHealthNonColor: {fileID: 2621400381275573629, guid: e2d6d82a18243e74e83024d147bc61b2, type: 3}
 --- !u!114 &8368443749602640245
 MonoBehaviour:
   m_ObjectHideFlags: 0

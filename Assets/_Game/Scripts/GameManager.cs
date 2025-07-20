@@ -26,7 +26,7 @@ public class GameManager : MonoBehaviour
     void Start()
     {
         Score = 0;
-        HealthPlayer = 7;
+        HealthPlayer = 3;
         EventManager.OnAddPoints += HandleAddPoints;
         EventManager.OnHPchanged += HandleHealPlayer;
         HighScore = PlayerPrefs.GetInt(HIGH_SCORE_KEY);

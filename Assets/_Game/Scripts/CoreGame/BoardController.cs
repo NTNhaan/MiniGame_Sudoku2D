@@ -83,6 +83,8 @@ public class BoardController : MonoBehaviour
         for (int i = 0; i < lstSquareComponents.Count; i++)
         {
             lstSquareComponents[i].SetNumber(data.unsolved_data[i]);
+            lstSquareComponents[i].SetCorrectNumber(data.solved_data[i]);
+            lstSquareComponents[i].SetHasDefaultValue(data.unsolved_data[i] != 0 && data.unsolved_data[i] == data.solved_data[i]);
         }
     }
 }

@@ -5,18 +5,18 @@ using UnityEngine.Events;
 using UnityEngine.EventSystems;
 public class Square : Selectable, IPointerClickHandler, ISubmitHandler, IPointerEnterHandler, IPointerExitHandler
 {
-    [SerializeField] private GameObject textNumber;
+    [SerializeField] private Text textNumber;
     private int number = 0;
+    private int correctNumber = 0;
+
     private bool isSelected = false;
     private int square_index = -1;
-    public bool IsSelected()
-    {
-        return isSelected;
-    }
-    public void SetSquareIndex(int index)
-    {
-        square_index = index;
-    }
+    private bool hasDefaultValue = false;
+    public void SetHasDefaultValue(bool isHasDefault) { hasDefaultValue = isHasDefault; }
+    public bool GetHasDefaultValue() { return hasDefaultValue; }
+    public bool IsSelected() { return isSelected; }
+    public void SetSquareIndex(int index) { square_index = index; }
+    public void SetCorrectNumber(int number) { correctNumber = number; }
     void Start()
     {
         isSelected = false;
@@ -25,17 +25,29 @@ public class Square : Selectable, IPointerClickHandler, ISubmitHandler, IPointer
     {
         if (number <= 0)
         {
-            textNumber.GetComponent<Text>().text = " ";
+            textNumber.text = " ";
         }
         else
         {
-            textNumber.GetComponent<Text>().text = number.ToString();
+            textNumber.text = number.ToString();
         }
     }
     public void SetNumber(int number)
     {
         this.number = number;
         DisplayText();
+    }
+
+    public void SetTextColor(Color color)
+    {
+        if (textNumber != null)
+        {
+            Text textComponent = textNumber;
+            if (textComponent != null)
+            {
+                textComponent.color = color;
+            }
+        }
     }
     public void OnPointerClick(PointerEventData eventData)
     {
@@ -51,7 +63,7 @@ public class Square : Selectable, IPointerClickHandler, ISubmitHandler, IPointer
         EventManager.OnUpdateNumber += OnSetNumber;
         EventManager.OnSquareSelected += OnSquareSelected;
     }
-    private void Oisable()
+    private void OnDisable()
     {
         EventManager.OnUpdateNumber -= OnSetNumber;
         EventManager.OnSquareSelected -= OnSquareSelected;
@@ -59,9 +71,24 @@ public class Square : Selectable, IPointerClickHandler, ISubmitHandler, IPointer
     }
     public void OnSetNumber(int number)
     {
-        if (isSelected)
+        if (isSelected && hasDefaultValue == false)
         {
             SetNumber(number);
+            SetTextColor(Color.blue);
+            if (number != correctNumber)
+            {
+                var color = this.colors;
+                color.normalColor = Color.red;
+                this.colors = color;
+
+                EventManager.SelectWrongNumber();
+            }
+            else
+            {
+                var color = this.colors;
+                color.normalColor = Color.white;
+                this.colors = color;
+            }
         }
     }
     public void OnSquareSelected(int square_index)
