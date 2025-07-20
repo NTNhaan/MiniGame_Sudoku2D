@@ -63,6 +63,7 @@ public class GameManager : MonoBehaviour
         if (HealthPlayer <= 0)
         {
             // AudioManager.Instance.TurnOffMusic();
+            EventManager.IsGameOver(); // check gameover turn off timmer
             panelGameOver.SetActive(true);
             Time.timeScale = 0;
         }

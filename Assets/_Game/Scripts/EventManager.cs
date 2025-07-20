@@ -20,4 +20,7 @@ public static class EventManager
 
     public static event UnityAction OnWrongNumber;
     public static void SelectWrongNumber() => OnWrongNumber?.Invoke();
+
+    public static event UnityAction OnGameOver;
+    public static void IsGameOver() => OnGameOver?.Invoke();
 }

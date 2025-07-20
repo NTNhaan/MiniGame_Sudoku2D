@@ -89,6 +89,11 @@ MonoBehaviour:
   m_Interactable: 1
   m_TargetGraphic: {fileID: 1039697348276752866}
   textNumber: {fileID: 2476271342675690713}
+  imgSquare: {fileID: 1039697348276752866}
+  lstSprSquare:
+  - {fileID: -2921817588733584341, guid: f9627253245441941846e8cd8adfe232, type: 3}
+  - {fileID: -5226718717768792896, guid: 471bdd0a07fb7cb448adb741936dc70e, type: 3}
+  - {fileID: -3980950410701356757, guid: e8fd24aedec96034ca1f0c769a99f444, type: 3}
 --- !u!1 &3639368090266115917
 GameObject:
   m_ObjectHideFlags: 0
@@ -233,7 +238,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_Sprite: {fileID: -516192679, guid: c1dc3c99914804b4c8247bf0d6135839, type: 3}
+  m_Sprite: {fileID: -3980950410701356757, guid: e8fd24aedec96034ca1f0c769a99f444, type: 3}
   m_Type: 0
   m_PreserveAspect: 0
   m_FillCenter: 1

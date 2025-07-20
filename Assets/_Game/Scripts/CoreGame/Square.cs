@@ -6,6 +6,8 @@ using UnityEngine.EventSystems;
 public class Square : Selectable, IPointerClickHandler, ISubmitHandler, IPointerEnterHandler, IPointerExitHandler
 {
     [SerializeField] private Text textNumber;
+    [SerializeField] private Image imgSquare;
+    [SerializeField] private List<Sprite> lstSprSquare;
     private int number = 0;
     private int correctNumber = 0;
 
@@ -96,6 +98,18 @@ public class Square : Selectable, IPointerClickHandler, ISubmitHandler, IPointer
         if (this.square_index != square_index)
         {
             isSelected = false;
+        }
+    }
+    public void ChangeSpriteSquare()
+    {
+        if (lstSprSquare != null && lstSprSquare.Count != 0 && imgSquare != null)
+        {
+            int randomIndex = Random.Range(0, lstSprSquare.Count);
+            imgSquare.sprite = lstSprSquare[randomIndex];
+        }
+        else
+        {
+            Debug.LogWarning("lstSprSquare is null, empty, or imgSquare is null!");
         }
     }
 }

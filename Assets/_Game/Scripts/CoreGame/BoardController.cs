@@ -10,6 +10,7 @@ public class BoardController : MonoBehaviour
     [SerializeField] private GameObject square;
     [SerializeField] private float square_offset = 2.5f;
     [SerializeField] private float square_scale = 1.0f;
+    [SerializeField] private float square_gap = 0.1f;
     [SerializeField] private Vector2 startPos;
     private List<GameObject> lstSquare;
     private List<Square> lstSquareComponents; // Cache Square components
@@ -43,6 +44,7 @@ public class BoardController : MonoBehaviour
                 lstSquareComponents.Add(squareComponent);
 
                 squareComponent.SetSquareIndex(square_index);
+                squareComponent.ChangeSpriteSquare();
                 square_index++;
             }
         }
@@ -51,6 +53,9 @@ public class BoardController : MonoBehaviour
     {
         RectTransform squareRect = (RectTransform)lstSquare[0].transform;
         Vector2 offset = new Vector2();
+        Vector2 square_gap_number = new Vector2(0.0f, 0.0f);
+        bool rowMoved = false;
+
         offset.x = squareRect.rect.width * squareRect.transform.localScale.x + square_offset;
         offset.y = squareRect.rect.height * squareRect.transform.localScale.y + square_offset;
 
@@ -62,9 +67,22 @@ public class BoardController : MonoBehaviour
             {
                 row_number++;
                 column_number = 0;
+                square_gap_number.x = 0;
+                rowMoved = false;
             }
-            var posOffsetX = offset.x * column_number;
-            var posOffsetY = offset.y * row_number;
+            var posOffsetX = offset.x * column_number + (square_gap_number.x * square_gap);
+            var posOffsetY = offset.y * row_number + (square_gap_number.y * square_gap);
+            if (column_number > 0 && column_number % 3 == 0)
+            {
+                square_gap_number.x++;
+                posOffsetX += square_gap;
+            }
+            if (row_number > 0 && row_number % 3 == 0 && !rowMoved)
+            {
+                rowMoved = true;
+                square_gap_number.y++;
+                posOffsetY += square_gap;
+            }
             square.GetComponent<RectTransform>().anchoredPosition = new Vector2(startPos.x + posOffsetX, startPos.y - posOffsetY);
             column_number++;
         }
