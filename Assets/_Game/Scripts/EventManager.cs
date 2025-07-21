@@ -26,4 +26,10 @@ public static class EventManager
 
     public static event UnityAction<bool> OnNotesActive;
     public static void NotesActive(bool active) => OnNotesActive?.Invoke(active);
+    public static event UnityAction OnClearNumber;
+    public static void ClearNumber() => OnClearNumber?.Invoke();
+    public static event UnityAction OnUndoNumber;
+    public static void UndoNumber() => OnUndoNumber?.Invoke();
+    public static event UnityAction OnHintNumber;
+    public static void HintNumber() => OnHintNumber?.Invoke();
 }

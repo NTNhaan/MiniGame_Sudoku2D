@@ -18,10 +18,16 @@ public class Square : Selectable, IPointerClickHandler, ISubmitHandler, IPointer
     private int square_index = -1;
     private bool hasDefaultValue = false;
     private bool hasWrongValue = false;
+
+    private int previousNumber = 0;
+    private bool previousHasWrongValue = false;
+    private Color previousTextColor = Color.black;
+    private Color previousBackgroundColor = Color.white;
     public void SetHasDefaultValue(bool isHasDefault) { hasDefaultValue = isHasDefault; }
     public bool GetHasDefaultValue() { return hasDefaultValue; }
     public bool HasWrongValue() { return hasWrongValue; }
     public bool IsSelected() { return isSelected; }
+    public int GetNumber() { return number; }
     public void SetSquareIndex(int index) { square_index = index; }
     public void SetCorrectNumber(int number)
     {
@@ -35,18 +41,27 @@ public class Square : Selectable, IPointerClickHandler, ISubmitHandler, IPointer
         EventManager.OnUpdateNumber += OnSetNumber;
         EventManager.OnSquareSelected += OnSquareSelected;
         EventManager.OnNotesActive += OnNotesActive;
+        EventManager.OnClearNumber += OnClearNumber;
+        EventManager.OnUndoNumber += OnUndoNumber;
     }
     private void OnDisable()
     {
         EventManager.OnUpdateNumber -= OnSetNumber;
         EventManager.OnSquareSelected -= OnSquareSelected;
         EventManager.OnNotesActive -= OnNotesActive;
+        EventManager.OnClearNumber -= OnClearNumber;
+        EventManager.OnUndoNumber -= OnUndoNumber;
     }
     void Start()
     {
         isSelected = false;
         isNoteActive = false;
         SetNotesNumberValue(0);
+
+        previousNumber = 0;
+        previousHasWrongValue = false;
+        previousTextColor = Color.black;
+        previousBackgroundColor = Color.white;
     }
     #endregion
 
@@ -91,6 +106,8 @@ public class Square : Selectable, IPointerClickHandler, ISubmitHandler, IPointer
     {
         if (isSelected && !hasDefaultValue && !hasWrongValue)
         {
+            SaveCurrentState();
+
             if (isNoteActive && !hasWrongValue)
             {
                 SetNoteSingleNumberValue(number);
@@ -108,6 +125,7 @@ public class Square : Selectable, IPointerClickHandler, ISubmitHandler, IPointer
                 }
                 else
                 {
+                    hasWrongValue = false;
                     SetColor(Color.white);
                 }
             }
@@ -205,6 +223,52 @@ public class Square : Selectable, IPointerClickHandler, ISubmitHandler, IPointer
     public void OnNotesActive(bool active)
     {
         isNoteActive = active;
+    }
+    #endregion
+
+    #region Erase Booster Region
+    public void OnClearNumber()
+    {
+        if (isSelected && !hasDefaultValue)
+        {
+            SaveCurrentState();
+            number = 0;
+            hasWrongValue = false;
+            isSelected = false;
+            SetColor(Color.white);
+            SetTextColor(Color.black);
+            SetNotesNumberValue(0);
+            DisplayText();
+        }
+    }
+    #endregion
+
+    #region Undo Booster Region
+    private void SaveCurrentState()
+    {
+        previousNumber = number;
+        previousHasWrongValue = hasWrongValue;
+        previousTextColor = textNumber.color;
+        previousBackgroundColor = colors.normalColor;
+    }
+    public void OnUndoNumber()
+    {
+        if (isSelected && !hasDefaultValue)
+        {
+            number = previousNumber;
+            hasWrongValue = previousHasWrongValue;
+
+            SetTextColor(previousTextColor);
+            SetColor(previousBackgroundColor);
+            DisplayText();
+
+            if (number <= 0)
+            {
+                SetNotesNumberValue(0);
+            }
+
+            Debug.Log($"Undo: Square {square_index} restored to number {previousNumber}");
+        }
     }
     #endregion
 }

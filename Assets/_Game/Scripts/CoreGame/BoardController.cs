@@ -14,18 +14,21 @@ public class BoardController : MonoBehaviour
     [SerializeField] private Vector2 startPos;
     [SerializeField] private Color hightLightColor;
     private List<GameObject> lstSquare;
-    private List<Square> lstSquareComponents; // Cache Square components
+    private List<Square> lstSquareComponents;
     private int selected_data = -1;
+    private BoardData currentBoardData;
     public Color GetHightColoir => hightLightColor;
 
     #region Init Data
     private void OnEnable()
     {
         EventManager.OnSquareSelected += OnSquareSelected;
+        EventManager.OnHintNumber += OnHintNumber;
     }
     private void OnDisable()
     {
         EventManager.OnSquareSelected -= OnSquareSelected;
+        EventManager.OnHintNumber -= OnHintNumber;
     }
     void Start()
     {
@@ -110,12 +113,53 @@ public class BoardController : MonoBehaviour
 
     private void SetBoardSquareData(BoardData data)
     {
+        currentBoardData = data; // save current data
         for (int i = 0; i < lstSquareComponents.Count; i++)
         {
             lstSquareComponents[i].SetNumber(data.unsolved_data[i]);
             lstSquareComponents[i].SetCorrectNumber(data.solved_data[i]);
             lstSquareComponents[i].SetHasDefaultValue(data.unsolved_data[i] != 0 && data.unsolved_data[i] == data.solved_data[i]);
         }
+    }
+
+    private void OnHintNumber()
+    {
+        if (currentBoardData == null) return;
+
+        Square selectedSquare = null;
+        int selectedIndex = -1;
+        for (int i = 0; i < lstSquareComponents.Count; i++)
+        {
+            if (lstSquareComponents[i].IsSelected())
+            {
+                selectedSquare = lstSquareComponents[i];
+                selectedIndex = i;
+                break;
+            }
+        }
+
+        if (selectedSquare == null || selectedIndex == -1) // random square from list to hint
+        {
+            for (int i = 0; i < lstSquareComponents.Count; i++)
+            {
+                var square = lstSquareComponents[i];
+                if (!square.GetHasDefaultValue() && (square.GetNumber() == 0 || square.HasWrongValue()))
+                {
+                    selectedSquare = square;
+                    selectedIndex = i;
+                    OnSquareSelected(selectedIndex);
+                    break;
+                }
+            }
+        }
+
+        if (selectedSquare == null || selectedIndex == -1) return;
+
+        if (selectedSquare.GetHasDefaultValue()) return;
+
+        int correctNumber = currentBoardData.solved_data[selectedIndex];
+        selectedSquare.SetNumber(correctNumber);
+        selectedSquare.SetHasDefaultValue(true);
     }
     private void SetSquaresColor(int[] data, Color color)
     {
