@@ -23,6 +23,7 @@ public class UIManager : MonoBehaviour
 
     [SerializeField] private List<Image> lstImgHealth;
     [SerializeField] private Sprite imgHealthNonColor;
+    [SerializeField] private Text LevelTxt;
     private int health = 0;
     private int errorNumber = 0;
     public void RestartGame()
@@ -53,6 +54,25 @@ public class UIManager : MonoBehaviour
         GameManager.instance.OnScoreChanged += UpdatePanelScoreText;
         GameManager.instance.OnHealthPlayerchanged += UpdateHealthPlayer;
         EventManager.OnWrongNumber += ActionWrongNumber;
+        EventManager.OnLevelChanged += UpdateLevelText;
+
+        StartCoroutine(UpdateLevelTextWithDelay());
+    }
+
+    private IEnumerator UpdateLevelTextWithDelay()
+    {
+        yield return null;
+
+        int maxRetries = 10;
+        int retryCount = 0;
+
+        while (GameConfigSetting.Instance == null && retryCount < maxRetries)
+        {
+            yield return new WaitForSeconds(0.1f);
+            retryCount++;
+        }
+
+        UpdateLevelText();
     }
 
     private void Update()
@@ -68,6 +88,7 @@ public class UIManager : MonoBehaviour
         GameManager.instance.OnScoreChanged -= UpdatePanelScoreText;
         GameManager.instance.OnHealthPlayerchanged -= UpdateHealthPlayer;
         EventManager.OnWrongNumber -= ActionWrongNumber;
+        EventManager.OnLevelChanged -= UpdateLevelText;
     }
     void ActionWrongNumber()
     {
@@ -93,6 +114,35 @@ public class UIManager : MonoBehaviour
     {
         // udpate số lượng lives cho user
         HealthPlayer.text = "Health: " + GameManager.instance.HealthPlayer;
+    }
+
+    void UpdateLevelText()
+    {
+        if (GameConfigSetting.Instance != null && LevelTxt != null)
+        {
+            string currentDifficulty = GameConfigSetting.Instance.GetCurrentDifficulty();
+            int currentSubLevel = GameConfigSetting.Instance.GetCurrentSubLevel() + 1;
+
+            int totalSubLevels = GetTotalSubLevelsForCurrentDifficulty();
+
+            string levelText = $"{currentDifficulty} {currentSubLevel}/{totalSubLevels}";
+            LevelTxt.text = levelText;
+
+            Debug.Log($"UIManager: Updated LevelTxt to '{levelText}'");
+        }
+    }
+
+    private int GetTotalSubLevelsForCurrentDifficulty()
+    {
+        if (LevelData.Instance != null && GameConfigSetting.Instance != null)
+        {
+            string currentDifficulty = GameConfigSetting.Instance.GetCurrentDifficulty();
+            if (LevelData.Instance.gameDir.ContainsKey(currentDifficulty))
+            {
+                return LevelData.Instance.gameDir[currentDifficulty].Count;
+            }
+        }
+        return 3; // Default fallback
     }
     // public void SetStatePause(bool isPause)
     // {

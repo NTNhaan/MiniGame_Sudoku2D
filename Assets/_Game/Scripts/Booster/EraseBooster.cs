@@ -4,7 +4,6 @@ using UnityEngine.UI;
 
 public class EraseBooster : Selectable, IPointerClickHandler
 {
-    // Start is called once before the first execution of Update after the MonoBehaviour is created
     void Start()
     {
 

@@ -866,8 +866,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 5ff6d21484e8cae43b8460c4619d68c0, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  _dontDestroyOnLoad: 0
+  _dontDestroyOnLoad: 1
   gameMode: 0
+  currentDifficultyIndex: 0
+  currentSubLevelIndex: 0
 --- !u!1 &2030214554
 GameObject:
   m_ObjectHideFlags: 0

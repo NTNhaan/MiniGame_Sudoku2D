@@ -11,7 +11,7 @@ public class LoadingManager : MonoBehaviour
 
     public void Start()
     {
-        LoadEasyGame(NEXT_SCENE);
+        LoadCurrentProgressionLevel(NEXT_SCENE);
         // StartCoroutine(LoadingSceneFixedTime(NEXT_SCENE));
     }
     public void ActivateObject(GameObject obj)
@@ -51,6 +51,28 @@ public class LoadingManager : MonoBehaviour
 
 
     #region Load Level Game
+
+    private void LoadCurrentProgressionLevel(string sceneName)
+    {
+        if (GameConfigSetting.Instance != null)
+        {
+            string currentDifficulty = GameConfigSetting.Instance.GetCurrentDifficulty();
+            int currentSubLevel = GameConfigSetting.Instance.GetCurrentSubLevel();
+
+            Debug.Log($"Loading progression level: {currentDifficulty} - Sub Level {currentSubLevel + 1}");
+
+            GameConfigSetting.Instance.SetGameMode(currentDifficulty);
+
+            StartCoroutine(LoadingSceneFixedTime(sceneName));
+        }
+        else
+        {
+            Debug.LogError("GameConfigSetting.Instance is null! Loading Easy as default.");
+            LoadEasyGame(sceneName);
+        }
+    }
+
+    #region LoadLevel
     private void LoadEasyGame(string name)
     {
         Debug.Log("Loading level easy");
@@ -102,6 +124,38 @@ public class LoadingManager : MonoBehaviour
             Debug.LogError("GameConfigSetting.Instance is null!");
         }
         StartCoroutine(LoadingSceneFixedTime(name));
+    }
+    #endregion
+
+    public void LoadSpecificDifficulty(string difficulty)
+    {
+        switch (difficulty.ToLower())
+        {
+            case "easy":
+                LoadEasyGame(NEXT_SCENE);
+                break;
+            case "medium":
+                LoadMediumGame(NEXT_SCENE);
+                break;
+            case "hard":
+                LoadHardGame(NEXT_SCENE);
+                break;
+            case "impossible":
+                LoadImpossibleGame(NEXT_SCENE);
+                break;
+            default:
+                LoadCurrentProgressionLevel(NEXT_SCENE);
+                break;
+        }
+    }
+
+    public void ResetAndLoadFromBeginning()
+    {
+        if (GameConfigSetting.Instance != null)
+        {
+            GameConfigSetting.Instance.ResetProgression();
+        }
+        LoadCurrentProgressionLevel(NEXT_SCENE);
     }
     #endregion
 }

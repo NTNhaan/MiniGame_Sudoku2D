@@ -24,11 +24,13 @@ public class BoardController : MonoBehaviour
     {
         EventManager.OnSquareSelected += OnSquareSelected;
         EventManager.OnHintNumber += OnHintNumber;
+        EventManager.OnPuzzleComplete += OnLevelComplete;
     }
     private void OnDisable()
     {
         EventManager.OnSquareSelected -= OnSquareSelected;
         EventManager.OnHintNumber -= OnHintNumber;
+        EventManager.OnPuzzleComplete -= OnLevelComplete;
     }
     void Start()
     {
@@ -105,10 +107,26 @@ public class BoardController : MonoBehaviour
     }
     private void SetBoardNumber(string level)
     {
-        selected_data = Random.Range(0, LevelData.Instance.gameDir[level].Count);
-        var data = LevelData.Instance.gameDir[level][selected_data];
+        int subLevelIndex = GameConfigSetting.Instance.GetCurrentSubLevel();
 
-        SetBoardSquareData(data);
+        if (LevelData.Instance.gameDir.ContainsKey(level) &&
+            subLevelIndex < LevelData.Instance.gameDir[level].Count)
+        {
+            selected_data = subLevelIndex;
+            var data = LevelData.Instance.gameDir[level][selected_data];
+            SetBoardSquareData(data);
+
+            // Debug.Log($"Loading {level} - Sub Level {subLevelIndex + 1}/{LevelData.Instance.gameDir[level].Count}");
+            // Debug.Log("BoardController: Triggering OnLevelChanged event");
+            EventManager.LevelChanged();
+        }
+        else
+        {
+            // Debug.LogError($"Invalid level data: {level} or subLevelIndex: {subLevelIndex}");
+            selected_data = Random.Range(0, LevelData.Instance.gameDir[level].Count);
+            var data = LevelData.Instance.gameDir[level][selected_data];
+            SetBoardSquareData(data);
+        }
     }
 
     private void SetBoardSquareData(BoardData data)
@@ -185,4 +203,47 @@ public class BoardController : MonoBehaviour
         SetSquaresColor(verticalLine, hightLightColor);
         SetSquaresColor(square, hightLightColor);
     }
+
+    #region Level Progression
+
+    public void OnLevelComplete()
+    {
+        Debug.Log("Level Complete!");
+        bool hasNextLevel = GameConfigSetting.Instance.AdvanceToNextLevel();
+
+        if (hasNextLevel)
+        {
+            Invoke("LoadNextLevel", 2f);
+        }
+        else
+        {
+            OnGameComplete();
+        }
+    }
+
+    private void LoadNextLevel()
+    {
+        string nextLevel = GameConfigSetting.Instance.GetCurrentDifficulty();
+        SetBoardNumber(nextLevel);
+
+        ResetBoardState();
+    }
+
+    private void ResetBoardState()
+    {
+        SetSquaresColor(LineIndicator.Instance.GetAllSquareIndex(), Color.white);
+
+        foreach (var square in lstSquareComponents)
+        {
+            square.SetColor(Color.white);
+        }
+    }
+
+    private void OnGameComplete()
+    {
+        Debug.Log("GAME COMPLETED! All levels finished!");
+
+    }
+
+    #endregion
 }

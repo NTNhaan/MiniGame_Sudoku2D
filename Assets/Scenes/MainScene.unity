@@ -10654,6 +10654,7 @@ MonoBehaviour:
   - {fileID: 1905491885}
   - {fileID: 140133017}
   imgHealthNonColor: {fileID: 2621400381275573629, guid: e2d6d82a18243e74e83024d147bc61b2, type: 3}
+  LevelTxt: {fileID: 1523020524}
 --- !u!114 &8368443749602640245
 MonoBehaviour:
   m_ObjectHideFlags: 0
