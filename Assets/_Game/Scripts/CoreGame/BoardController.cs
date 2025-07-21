@@ -12,10 +12,21 @@ public class BoardController : MonoBehaviour
     [SerializeField] private float square_scale = 1.0f;
     [SerializeField] private float square_gap = 0.1f;
     [SerializeField] private Vector2 startPos;
+    [SerializeField] private Color hightLightColor;
     private List<GameObject> lstSquare;
     private List<Square> lstSquareComponents; // Cache Square components
     private int selected_data = -1;
+    public Color GetHightColoir => hightLightColor;
 
+    #region Init Data
+    private void OnEnable()
+    {
+        EventManager.OnSquareSelected += OnSquareSelected;
+    }
+    private void OnDisable()
+    {
+        EventManager.OnSquareSelected -= OnSquareSelected;
+    }
     void Start()
     {
         lstSquare = new List<GameObject>();
@@ -23,6 +34,7 @@ public class BoardController : MonoBehaviour
         CreateBoardGame();
         SetBoardNumber(GameConfigSetting.Instance.GetGameMode());
     }
+    #endregion
     private void CreateBoardGame()
     {
         SpawnSquare();
@@ -104,5 +116,29 @@ public class BoardController : MonoBehaviour
             lstSquareComponents[i].SetCorrectNumber(data.solved_data[i]);
             lstSquareComponents[i].SetHasDefaultValue(data.unsolved_data[i] != 0 && data.unsolved_data[i] == data.solved_data[i]);
         }
+    }
+    private void SetSquaresColor(int[] data, Color color)
+    {
+        foreach (var index in data)
+        {
+            var square = lstSquareComponents[index];
+            // bool isWrongNonDefault = square.HasWrongValue() && !square.GetHasDefaultValue();
+            if (!square.HasWrongValue() || square.GetHasDefaultValue())
+            {
+                square.SetColor(color);
+            }
+        }
+    }
+    public void OnSquareSelected(int square_index)
+    {
+        var horizontalLine = LineIndicator.Instance.GetHorizontalLine(square_index);
+        var verticalLine = LineIndicator.Instance.GetVerticallLine(square_index);
+        var square = LineIndicator.Instance.GetSquare(square_index);
+
+        SetSquaresColor(LineIndicator.Instance.GetAllSquareIndex(), Color.white);
+
+        SetSquaresColor(horizontalLine, hightLightColor);
+        SetSquaresColor(verticalLine, hightLightColor);
+        SetSquaresColor(square, hightLightColor);
     }
 }

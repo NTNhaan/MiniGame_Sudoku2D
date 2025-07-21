@@ -23,4 +23,7 @@ public static class EventManager
 
     public static event UnityAction OnGameOver;
     public static void IsGameOver() => OnGameOver?.Invoke();
+
+    public static event UnityAction<bool> OnNotesActive;
+    public static void NotesActive(bool active) => OnNotesActive?.Invoke(active);
 }

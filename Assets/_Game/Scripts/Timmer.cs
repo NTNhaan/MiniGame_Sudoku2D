@@ -9,13 +9,22 @@ public class Timmer : MonoBehaviour
     private int minute = 0;
     private float deltaTime;
     private bool stopClock = false;
+
+    #region Init Data
+    private void OnEnable()
+    {
+        EventManager.OnGameOver += ActionOnGameOver;
+    }
+    private void OnDisable()
+    {
+        EventManager.OnGameOver -= ActionOnGameOver;
+    }
     void Start()
     {
         stopClock = false;
         deltaTime = 0;
     }
-
-    // Update is called once per frame
+    #endregion
     void Update()
     {
         if (stopClock == false)
@@ -37,13 +46,5 @@ public class Timmer : MonoBehaviour
     public void ActionOnGameOver()
     {
         stopClock = true;
-    }
-    private void OnEnable()
-    {
-        EventManager.OnGameOver += ActionOnGameOver;
-    }
-    private void OnDisable()
-    {
-        EventManager.OnGameOver -= ActionOnGameOver;
     }
 }
