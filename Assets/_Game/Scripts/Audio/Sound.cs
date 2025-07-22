@@ -9,12 +9,11 @@ public class Sound
     {
         BackgroundMusic,
         Sound_Click,
-        Sound_Coin,
-        Sound_ClosePopUp,
-        Sound_UnlockLevel,
+        Sound_Erase,
         Sound_Win,
         Sound_Lose,
-        Sound_Booster,
+        Sound_RightNumber,
+        Sound_WrongNumber
     }
 
     public Name name;

@@ -3344,7 +3344,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: dc07aad673287894a98c58809fbe5962, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  panelGameOver: {fileID: 0}
+  panelGameOver: {fileID: 1689873713}
 --- !u!114 &744446036
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -3360,11 +3360,41 @@ MonoBehaviour:
   _dontDestroyOnLoad: 0
   backgroundMusic:
     name: 0
-    clip: {fileID: 0}
+    clip: {fileID: 8300000, guid: 8b7f56e41bbc44f45a66be531e44db06, type: 3}
+    volume: 1
+    source: {fileID: 0}
+    loop: 1
+  lstSoundEffect:
+  - name: 1
+    clip: {fileID: 8300000, guid: 1fe75c203fc1d7845b1baebaaa0a2166, type: 3}
     volume: 1
     source: {fileID: 0}
     loop: 0
-  lstSoundEffect: []
+  - name: 2
+    clip: {fileID: 8300000, guid: 2311318334897754ba43e0cb70d598ac, type: 3}
+    volume: 1
+    source: {fileID: 0}
+    loop: 0
+  - name: 4
+    clip: {fileID: 8300000, guid: 91678108786596c4caf0af7d2c832602, type: 3}
+    volume: 1
+    source: {fileID: 0}
+    loop: 0
+  - name: 5
+    clip: {fileID: 8300000, guid: 64bea1cbfe6eb2941892bc2e25b72fe8, type: 3}
+    volume: 1
+    source: {fileID: 0}
+    loop: 0
+  - name: 3
+    clip: {fileID: 8300000, guid: a927b1ea0208d3e47850ba67a30e6402, type: 3}
+    volume: 1
+    source: {fileID: 0}
+    loop: 0
+  - name: 6
+    clip: {fileID: 8300000, guid: 49b6881030354fe439e746ce5a0501f7, type: 3}
+    volume: 1
+    source: {fileID: 0}
+    loop: 0
 --- !u!1 &775491817
 GameObject:
   m_ObjectHideFlags: 0

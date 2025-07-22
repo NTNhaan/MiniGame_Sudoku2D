@@ -62,6 +62,12 @@ public class GameManager : MonoBehaviour
     {
         if (HealthPlayer <= 0)
         {
+            // Play lose sound
+            if (AudioController.Instance != null)
+            {
+                AudioController.Instance.PlayLoseSound();
+            }
+
             // AudioManager.Instance.TurnOffMusic();
             EventManager.IsGameOver(); // check gameover turn off timmer
             panelGameOver.SetActive(true);

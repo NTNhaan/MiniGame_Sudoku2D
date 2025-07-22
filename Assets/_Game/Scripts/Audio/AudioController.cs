@@ -11,7 +11,7 @@ public class AudioController : Singleton<AudioController>
     private void Start()
     {
         CreateAudioSource(lstSoundEffect);
-        // SoundCheck(); có DBController để set giá trị gốc của các biến sử dụng (sound and music)
+        CreateAudioSourceBackground();
         PlayBackgroundMusic();
     }
     private void PlayBackgroundMusic()
@@ -22,6 +22,37 @@ public class AudioController : Singleton<AudioController>
     {
         PlayEffect(Sound.Name.Sound_Click);
     }
+
+    #region Sound Effect Functions
+    public void PlayClickSound()
+    {
+        PlayEffect(Sound.Name.Sound_Click);
+    }
+    public void PlayEraseSound()
+    {
+        PlayEffect(Sound.Name.Sound_Erase);
+    }
+    public void PlayWinSound()
+    {
+        PlayEffect(Sound.Name.Sound_Win);
+    }
+
+    public void PlayLoseSound()
+    {
+        PlayEffect(Sound.Name.Sound_Lose);
+    }
+
+    public void PlayRightNumberSound()
+    {
+        PlayEffect(Sound.Name.Sound_RightNumber);
+    }
+
+    public void PlayWrongNumberSound()
+    {
+        PlayEffect(Sound.Name.Sound_WrongNumber);
+    }
+
+    #endregion
 
     public void SetVolumeMusic(bool status)
     {
@@ -44,19 +75,32 @@ public class AudioController : Singleton<AudioController>
     }
     private void CreateAudioSourceBackground()
     {
+        if (backgroundMusic.source == null)
+        {
+            backgroundMusic.source = gameObject.AddComponent<AudioSource>();
+        }
         backgroundMusic.source.clip = backgroundMusic.clip;
         backgroundMusic.source.loop = backgroundMusic.loop;
+        backgroundMusic.source.volume = backgroundMusic.volume;
+        backgroundMusic.source.playOnAwake = false;
     }
 
     private void CreateAudioSource(Sound[] sounds)
     {
         foreach (Sound sound in sounds)
         {
+            if (sound.source == null)
+            {
+                GameObject soundObject = new GameObject($"AudioSource_{sound.name}");
+                soundObject.transform.SetParent(transform);
+                sound.source = soundObject.AddComponent<AudioSource>();
+            }
+
             sound.source.clip = sound.clip;
             sound.source.volume = sound.volume;
             sound.source.loop = sound.loop;
+            sound.source.playOnAwake = false;
         }
-        CreateAudioSourceBackground();
     }
     public void PlayEffect(Sound.Name name)
     {
@@ -68,7 +112,6 @@ public class AudioController : Singleton<AudioController>
                 return;
             }
         }
-        Debug.LogError("Unable to play effect " + name);
     }
     public void StopEffect(Sound.Name name)
     {
@@ -80,6 +123,5 @@ public class AudioController : Singleton<AudioController>
                 return;
             }
         }
-        Debug.LogError("Unable to play effect " + name);
     }
 }

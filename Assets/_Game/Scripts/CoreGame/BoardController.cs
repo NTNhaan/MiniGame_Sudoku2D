@@ -209,6 +209,13 @@ public class BoardController : MonoBehaviour
     public void OnLevelComplete()
     {
         Debug.Log("Level Complete!");
+
+        // Play win sound
+        if (AudioController.Instance != null)
+        {
+            AudioController.Instance.PlayWinSound();
+        }
+
         bool hasNextLevel = GameConfigSetting.Instance.AdvanceToNextLevel();
 
         if (hasNextLevel)

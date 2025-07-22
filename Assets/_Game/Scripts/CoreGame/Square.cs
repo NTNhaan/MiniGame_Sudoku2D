@@ -97,6 +97,12 @@ public class Square : Selectable, IPointerClickHandler, ISubmitHandler, IPointer
     {
         isSelected = true;
         EventManager.SquareSeleced(square_index);
+
+        // Play click sound
+        if (AudioController.Instance != null)
+        {
+            AudioController.Instance.PlayClickSound();
+        }
     }
     public void OnSubmit(BaseEventData eventData)
     {
@@ -122,11 +128,23 @@ public class Square : Selectable, IPointerClickHandler, ISubmitHandler, IPointer
                     hasWrongValue = true;
                     SetColor(Color.red);
                     EventManager.SelectWrongNumber();
+
+                    // Play wrong number sound
+                    if (AudioController.Instance != null)
+                    {
+                        AudioController.Instance.PlayWrongNumberSound();
+                    }
                 }
                 else
                 {
                     hasWrongValue = false;
                     SetColor(Color.white);
+
+                    // Play right number sound
+                    if (AudioController.Instance != null)
+                    {
+                        AudioController.Instance.PlayRightNumberSound();
+                    }
                 }
             }
         }
@@ -239,6 +257,12 @@ public class Square : Selectable, IPointerClickHandler, ISubmitHandler, IPointer
             SetTextColor(Color.black);
             SetNotesNumberValue(0);
             DisplayText();
+
+            // Play erase sound
+            if (AudioController.Instance != null)
+            {
+                AudioController.Instance.PlayEraseSound();
+            }
         }
     }
     #endregion
