@@ -31,7 +31,7 @@ public static class EventManager
     public static event UnityAction OnClearNumber;
     public static void ClearNumber() => OnClearNumber?.Invoke();
     public static event UnityAction OnUndoNumber;
-    public static void UndoNumber() => OnUndoNumber?.Invoke();
+    public static void UndoNumber() => BoardController.Instance.PerformUndo();
     public static event UnityAction OnHintNumber;
     public static void HintNumber() => OnHintNumber?.Invoke();
     #endregion
@@ -42,5 +42,11 @@ public static class EventManager
 
     public static event UnityAction OnLevelChanged;
     public static void LevelChanged() => OnLevelChanged?.Invoke();
+
+    public static event UnityAction OnUndoCountChanged;
+    public static void UndoCountChanged() => OnUndoCountChanged?.Invoke();
+
+    public static event UnityAction OnHintCountChanged;
+    public static void HintCountChanged() => OnHintCountChanged?.Invoke();
     #endregion
 }

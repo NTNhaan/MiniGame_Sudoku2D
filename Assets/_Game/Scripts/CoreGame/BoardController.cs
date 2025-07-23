@@ -2,8 +2,9 @@ using System.Collections.Generic;
 using Unity.Android.Gradle.Manifest;
 using UnityEngine;
 using UnityEngine.UI;
+using Utils;
 
-public class BoardController : MonoBehaviour
+public class BoardController : Singleton<BoardController>
 {
     [SerializeField] private int columns = 0;
     [SerializeField] private int rows = 0;
@@ -18,6 +19,13 @@ public class BoardController : MonoBehaviour
     private int selected_data = -1;
     private BoardData currentBoardData;
     public Color GetHightColoir => hightLightColor;
+
+    private Stack<UndoState> undoStack = new Stack<UndoState>();
+    private const int MAX_UNDO_STEPS = 10;
+
+    // Hint Management
+    private int remainingHints = 3; // Số hint có thể sử dụng mỗi level
+    private const int MAX_HINTS_PER_LEVEL = 3;
 
     #region Init Data
     private void OnEnable()
@@ -107,6 +115,14 @@ public class BoardController : MonoBehaviour
     }
     private void SetBoardNumber(string level)
     {
+        ClearUndoHistory();
+
+        // Reset hint counter
+        remainingHints = MAX_HINTS_PER_LEVEL;
+
+        // Trigger UI update
+        EventManager.HintCountChanged();
+
         int subLevelIndex = GameConfigSetting.Instance.GetCurrentSubLevel();
 
         if (LevelData.Instance.gameDir.ContainsKey(level) &&
@@ -115,14 +131,10 @@ public class BoardController : MonoBehaviour
             selected_data = subLevelIndex;
             var data = LevelData.Instance.gameDir[level][selected_data];
             SetBoardSquareData(data);
-
-            // Debug.Log($"Loading {level} - Sub Level {subLevelIndex + 1}/{LevelData.Instance.gameDir[level].Count}");
-            // Debug.Log("BoardController: Triggering OnLevelChanged event");
             EventManager.LevelChanged();
         }
         else
         {
-            // Debug.LogError($"Invalid level data: {level} or subLevelIndex: {subLevelIndex}");
             selected_data = Random.Range(0, LevelData.Instance.gameDir[level].Count);
             var data = LevelData.Instance.gameDir[level][selected_data];
             SetBoardSquareData(data);
@@ -131,12 +143,21 @@ public class BoardController : MonoBehaviour
 
     private void SetBoardSquareData(BoardData data)
     {
-        currentBoardData = data; // save current data
+        currentBoardData = data;
         for (int i = 0; i < lstSquareComponents.Count; i++)
         {
             lstSquareComponents[i].SetNumber(data.unsolved_data[i]);
             lstSquareComponents[i].SetCorrectNumber(data.solved_data[i]);
-            lstSquareComponents[i].SetHasDefaultValue(data.unsolved_data[i] != 0 && data.unsolved_data[i] == data.solved_data[i]);
+
+            // Kiểm tra và set default value
+            bool isDefault = data.unsolved_data[i] != 0 && data.unsolved_data[i] == data.solved_data[i];
+            lstSquareComponents[i].SetHasDefaultValue(isDefault);
+
+            // Debug log để kiểm tra default values
+            if (isDefault)
+            {
+                Debug.Log($"Square {i}: Set as DEFAULT - unsolved: {data.unsolved_data[i]}, solved: {data.solved_data[i]}");
+            }
         }
     }
 
@@ -144,40 +165,73 @@ public class BoardController : MonoBehaviour
     {
         if (currentBoardData == null) return;
 
-        Square selectedSquare = null;
-        int selectedIndex = -1;
+        // Kiểm tra còn hint không
+        if (remainingHints <= 0)
+        {
+            Debug.Log("No hints remaining for this level");
+            return;
+        }
+
+        // Tạo danh sách tất cả squares có thể hint (không phải default và chưa đúng)
+        var availableSquares = new List<int>();
+
         for (int i = 0; i < lstSquareComponents.Count; i++)
         {
-            if (lstSquareComponents[i].IsSelected())
+            var square = lstSquareComponents[i];
+            // Chỉ thêm vào list nếu:
+            // 1. Không phải default value
+            // 2. Số hiện tại bằng 0 (trống) hoặc sai
+            if (!square.GetHasDefaultValue() &&
+                (square.GetNumber() == 0 || square.HasWrongValue() || square.GetNumber() != currentBoardData.solved_data[i]))
             {
-                selectedSquare = lstSquareComponents[i];
-                selectedIndex = i;
-                break;
+                availableSquares.Add(i);
             }
         }
 
-        if (selectedSquare == null || selectedIndex == -1) // random square from list to hint
+        // Nếu không có square nào có thể hint
+        if (availableSquares.Count == 0)
         {
-            for (int i = 0; i < lstSquareComponents.Count; i++)
-            {
-                var square = lstSquareComponents[i];
-                if (!square.GetHasDefaultValue() && (square.GetNumber() == 0 || square.HasWrongValue()))
-                {
-                    selectedSquare = square;
-                    selectedIndex = i;
-                    OnSquareSelected(selectedIndex);
-                    break;
-                }
-            }
+            Debug.Log("No squares available for hint");
+            return;
         }
 
-        if (selectedSquare == null || selectedIndex == -1) return;
+        // Random chọn một square từ danh sách available
+        int randomIndex = UnityEngine.Random.Range(0, availableSquares.Count);
+        int selectedIndex = availableSquares[randomIndex];
+        var selectedSquare = lstSquareComponents[selectedIndex];
 
-        if (selectedSquare.GetHasDefaultValue()) return;
-
+        // Lấy số đúng từ solved_data
         int correctNumber = currentBoardData.solved_data[selectedIndex];
+
+        // Lưu undo state trước khi hint (nếu square hiện tại không trống)
+        if (selectedSquare.GetNumber() != 0)
+        {
+            RegisterUndoState(selectedSquare);
+        }
+
+        // Set số đúng cho square đó
         selectedSquare.SetNumber(correctNumber);
-        selectedSquare.SetHasDefaultValue(true);
+        selectedSquare.SetHasDefaultValue(true); // Mark as default để không thể edit
+        selectedSquare.SetTextColor(Color.green); // Màu xanh để phân biệt với default ban đầu
+
+        var horizontalLine = LineIndicator.Instance.GetHorizontalLine(selectedIndex);
+        var verticalLine = LineIndicator.Instance.GetVerticallLine(selectedIndex);
+        var squareGroup = LineIndicator.Instance.GetSquare(selectedIndex);
+        SetSquaresColor(LineIndicator.Instance.GetAllSquareIndex(), Color.white);
+        SetSquaresColor(horizontalLine, hightLightColor);
+        SetSquaresColor(verticalLine, hightLightColor);
+        SetSquaresColor(squareGroup, hightLightColor);
+
+        EventManager.SquareSeleced(-1);
+
+        remainingHints--;
+
+        EventManager.HintCountChanged();
+
+        if (AudioController.Instance != null)
+        {
+            AudioController.Instance.PlayRightNumberSound();
+        }
     }
     private void SetSquaresColor(int[] data, Color color)
     {
@@ -252,5 +306,103 @@ public class BoardController : MonoBehaviour
 
     }
 
+    #endregion
+
+    #region Booster Undo
+    public void RegisterUndoState(Square square)
+    {
+        if (square != null && !square.GetHasDefaultValue())
+        {
+            int squareIndex = square.GetSquareIndex();
+            var undoState = new UndoState(
+                squareIndex,
+                square.GetPreviousNumber(),
+                square.GetPreviousHasWrongValue(),
+                square.GetPreviousTextColor(),
+                square.GetPreviousBackgroundColor()
+            );
+
+            undoStack.Push(undoState);
+            if (undoStack.Count > MAX_UNDO_STEPS)
+            {
+                var tempArray = undoStack.ToArray();
+                undoStack.Clear();
+                for (int i = tempArray.Length - 2; i >= 0; i--)
+                {
+                    undoStack.Push(tempArray[i]);
+                }
+            }
+            EventManager.UndoCountChanged();
+        }
+    }
+    public void PerformUndo()
+    {
+        if (undoStack.Count > 0)
+        {
+            var undoState = undoStack.Pop();
+            var square = lstSquareComponents[undoState.squareIndex];
+
+            if (!square.GetHasDefaultValue())
+            {
+                square.RestoreState(
+                    undoState.previousNumber,
+                    undoState.previousHasWrongValue,
+                    undoState.previousTextColor,
+                    undoState.previousBackgroundColor
+                );
+                EventManager.UndoCountChanged();
+                AudioController.Instance.PlayUndoSound();
+            }
+        }
+    }
+    public bool CanUndo()
+    {
+        return undoStack.Count > 0;
+    }
+    public int GetUndoCount()
+    {
+        return undoStack.Count;
+    }
+    public void ClearUndoHistory()
+    {
+        undoStack.Clear();
+        Debug.Log("BoardController: Xoa du lieu stack undo");
+        EventManager.UndoCountChanged();
+    }
+    #endregion
+
+    #region Hint Management
+    /// <summary>
+    /// Lấy số hint còn lại
+    /// </summary>
+    public int GetRemainingHints()
+    {
+        return remainingHints;
+    }
+
+    /// <summary>
+    /// Kiểm tra có thể sử dụng hint không
+    /// </summary>
+    public bool CanUseHint()
+    {
+        return remainingHints > 0;
+    }
+
+    /// <summary>
+    /// Debug method - hiển thị tất cả default squares
+    /// </summary>
+    public void DebugShowDefaultSquares()
+    {
+        Debug.Log("=== DEFAULT SQUARES DEBUG ===");
+        for (int i = 0; i < lstSquareComponents.Count; i++)
+        {
+            var square = lstSquareComponents[i];
+            if (square.GetHasDefaultValue())
+            {
+                Debug.Log($"Square {i}: DEFAULT - Number: {square.GetNumber()}, Correct: {square.GetCorrectNumber()}");
+            }
+        }
+        Debug.Log("=== END DEBUG ===");
+    }
     #endregion
 }

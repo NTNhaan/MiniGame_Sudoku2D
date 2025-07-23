@@ -32,6 +32,10 @@ public class AudioController : Singleton<AudioController>
     {
         PlayEffect(Sound.Name.Sound_Erase);
     }
+    public void PlayUndoSound()
+    {
+        PlayEffect(Sound.Name.Sound_Erase); // Sử dụng sound erase cho undo
+    }
     public void PlayWinSound()
     {
         PlayEffect(Sound.Name.Sound_Win);

@@ -16,7 +16,7 @@ public class UIManager : MonoBehaviour
     public Text PanelScoreText;
     public Text HighScoreText;
     [SerializeField] private GameManager scoreManager;
-
+    [SerializeField] private GameObject PopupShopIAP;
     // [SerializeField] Image imgStatus;
     // [SerializeField] Sprite[] sprStatusPause;
     // private bool isPause = false;
@@ -24,6 +24,7 @@ public class UIManager : MonoBehaviour
     [SerializeField] private List<Image> lstImgHealth;
     [SerializeField] private Sprite imgHealthNonColor;
     [SerializeField] private Text LevelTxt;
+    [SerializeField] private Text UndoCountTxt;
     private int health = 0;
     private int errorNumber = 0;
     public void RestartGame()
@@ -55,8 +56,10 @@ public class UIManager : MonoBehaviour
         GameManager.instance.OnHealthPlayerchanged += UpdateHealthPlayer;
         EventManager.OnWrongNumber += ActionWrongNumber;
         EventManager.OnLevelChanged += UpdateLevelText;
+        EventManager.OnUndoCountChanged += UpdateUndoCount;
 
         StartCoroutine(UpdateLevelTextWithDelay());
+        UpdateUndoCount();
     }
 
     private IEnumerator UpdateLevelTextWithDelay()
@@ -118,18 +121,76 @@ public class UIManager : MonoBehaviour
 
     void UpdateLevelText()
     {
-        if (GameConfigSetting.Instance != null && LevelTxt != null)
+        if (LevelTxt != null)
         {
-            string currentDifficulty = GameConfigSetting.Instance.GetCurrentDifficulty();
-            int currentSubLevel = GameConfigSetting.Instance.GetCurrentSubLevel() + 1;
+            // Tính toán level tổng từ difficulty và sublevel
+            if (GameConfigSetting.Instance != null)
+            {
+                string currentDifficulty = GameConfigSetting.Instance.GetCurrentDifficulty();
+                int currentSubLevel = GameConfigSetting.Instance.GetCurrentSubLevel();
 
-            int totalSubLevels = GetTotalSubLevelsForCurrentDifficulty();
+                // Tính level tổng dựa trên progression
+                int totalLevel = CalculateTotalLevelFromProgression(currentDifficulty, currentSubLevel);
 
-            string levelText = $"{currentDifficulty} {currentSubLevel}/{totalSubLevels}";
-            LevelTxt.text = levelText;
+                // Lấy thông tin level từ FixedSudokuLevelData
+                var allLevels = FixedSudokuLevelData.GetAllLevels();
+                if (totalLevel > 0 && totalLevel <= allLevels.Count)
+                {
+                    var levelData = allLevels[totalLevel - 1]; // Convert to 0-based index
+                    string levelText = $"Level {levelData.levelId} - {levelData.difficulty}";
+                    LevelTxt.text = levelText;
 
-            Debug.Log($"UIManager: Updated LevelTxt to '{levelText}'");
+                    Debug.Log($"UIManager: Updated LevelTxt to '{levelText}' (Total Level: {totalLevel})");
+                }
+                else
+                {
+                    // Fallback to old display format
+                    int displaySubLevel = currentSubLevel + 1;
+                    int totalSubLevels = GetTotalSubLevelsForCurrentDifficulty();
+                    string levelText = $"{currentDifficulty} {displaySubLevel}/{totalSubLevels}";
+                    LevelTxt.text = levelText;
+
+                    Debug.Log($"UIManager: Updated LevelTxt to '{levelText}' (fallback)");
+                }
+            }
+            else
+            {
+                LevelTxt.text = "Level 1";
+                Debug.Log("UIManager: GameConfigSetting not available, using default");
+            }
         }
+    }
+
+    private int CalculateTotalLevelFromProgression(string difficulty, int subLevel)
+    {
+        int baseLevel = 0;
+
+        switch (difficulty)
+        {
+            case "Easy":
+                baseLevel = 0;
+                break;
+            case "Medium":
+                baseLevel = GetTotalSubLevelsForDifficulty("Easy");
+                break;
+            case "Hard":
+                baseLevel = GetTotalSubLevelsForDifficulty("Easy") + GetTotalSubLevelsForDifficulty("Medium");
+                break;
+            case "Impossible":
+                baseLevel = GetTotalSubLevelsForDifficulty("Easy") + GetTotalSubLevelsForDifficulty("Medium") + GetTotalSubLevelsForDifficulty("Hard");
+                break;
+        }
+
+        return baseLevel + subLevel + 1; // +1 because levels are 1-based
+    }
+
+    private int GetTotalSubLevelsForDifficulty(string difficulty)
+    {
+        if (LevelData.Instance != null && LevelData.Instance.gameDir.ContainsKey(difficulty))
+        {
+            return LevelData.Instance.gameDir[difficulty].Count;
+        }
+        return 2; // Default fallback
     }
 
     private int GetTotalSubLevelsForCurrentDifficulty()
@@ -142,8 +203,27 @@ public class UIManager : MonoBehaviour
                 return LevelData.Instance.gameDir[currentDifficulty].Count;
             }
         }
-        return 3; // Default fallback
+        return 3;
     }
+
+    public void UpdateUndoCount()
+    {
+        if (UndoCountTxt != null && BoardController.Instance != null)
+        {
+            int undoCount = BoardController.Instance.GetUndoCount();
+            UndoCountTxt.text = $"Undo: {undoCount}";
+        }
+    }
+    public void UpdateUndoCount(int dummy)
+    {
+        UpdateUndoCount();
+    }
+
+    public void ForceUpdateLevelText()
+    {
+        UpdateLevelText();
+    }
+
     // public void SetStatePause(bool isPause)
     // {
     //     if (isPause)
