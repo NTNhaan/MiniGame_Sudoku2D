@@ -59,15 +59,12 @@ public class LoadingManager : MonoBehaviour
             string currentDifficulty = GameConfigSetting.Instance.GetCurrentDifficulty();
             int currentSubLevel = GameConfigSetting.Instance.GetCurrentSubLevel();
 
-            Debug.Log($"Loading progression level: {currentDifficulty} - Sub Level {currentSubLevel + 1}");
-
             GameConfigSetting.Instance.SetGameMode(currentDifficulty);
 
             StartCoroutine(LoadingSceneFixedTime(sceneName));
         }
         else
         {
-            Debug.LogError("GameConfigSetting.Instance is null! Loading Easy as default.");
             LoadEasyGame(sceneName);
         }
     }
@@ -75,53 +72,33 @@ public class LoadingManager : MonoBehaviour
     #region LoadLevel
     private void LoadEasyGame(string name)
     {
-        Debug.Log("Loading level easy");
         if (GameConfigSetting.Instance != null)
         {
             GameConfigSetting.Instance.SetGameMode(GameConfigSetting.EGameMode.EASY);
-        }
-        else
-        {
-            Debug.LogError("GameConfigSetting.Instance is null!");
         }
         StartCoroutine(LoadingSceneFixedTime(name));
     }
     private void LoadMediumGame(string name)
     {
-        Debug.Log("Loading level Medium");
         if (GameConfigSetting.Instance != null)
         {
             GameConfigSetting.Instance.SetGameMode(GameConfigSetting.EGameMode.MEDIUM);
-        }
-        else
-        {
-            Debug.LogError("GameConfigSetting.Instance is null!");
         }
         StartCoroutine(LoadingSceneFixedTime(name));
     }
     private void LoadHardGame(string name)
     {
-        Debug.Log("Loading level hard");
         if (GameConfigSetting.Instance != null)
         {
             GameConfigSetting.Instance.SetGameMode(GameConfigSetting.EGameMode.HARD);
-        }
-        else
-        {
-            Debug.LogError("GameConfigSetting.Instance is null!");
         }
         StartCoroutine(LoadingSceneFixedTime(name));
     }
     private void LoadImpossibleGame(string name)
     {
-        Debug.Log("Loading level Impossible");
         if (GameConfigSetting.Instance != null)
         {
             GameConfigSetting.Instance.SetGameMode(GameConfigSetting.EGameMode.IMPOSSIBLE);
-        }
-        else
-        {
-            Debug.LogError("GameConfigSetting.Instance is null!");
         }
         StartCoroutine(LoadingSceneFixedTime(name));
     }

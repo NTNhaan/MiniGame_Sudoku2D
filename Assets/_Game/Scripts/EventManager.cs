@@ -25,6 +25,9 @@ public static class EventManager
     public static event UnityAction OnGameOver;
     public static void IsGameOver() => OnGameOver?.Invoke();
 
+    public static event UnityAction OnGameOverUI;
+    public static void GameOverUI() => OnGameOverUI?.Invoke();
+
     #region Booster Event
     public static event UnityAction<bool> OnNotesActive;
     public static void NotesActive(bool active) => OnNotesActive?.Invoke(active);
@@ -39,6 +42,9 @@ public static class EventManager
     #region Level Progression
     public static event UnityAction OnPuzzleComplete;
     public static void PuzzleComplete() => OnPuzzleComplete?.Invoke();
+
+    public static event UnityAction<string> OnLevelCompleted;
+    public static void LevelCompleted(string levelInfo) => OnLevelCompleted?.Invoke(levelInfo);
 
     public static event UnityAction OnLevelChanged;
     public static void LevelChanged() => OnLevelChanged?.Invoke();

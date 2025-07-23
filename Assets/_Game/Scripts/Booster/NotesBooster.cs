@@ -25,6 +25,7 @@ public class NotesBooster : Selectable, IPointerClickHandler
         {
             imgNotes.sprite = lstNotesImg[0];
         }
+        AudioController.Instance.PlayClickSound();
         EventManager.NotesActive(isActive);
     }
 }

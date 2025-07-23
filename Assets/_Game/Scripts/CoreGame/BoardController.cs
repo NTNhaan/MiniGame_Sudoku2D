@@ -24,8 +24,8 @@ public class BoardController : Singleton<BoardController>
     private const int MAX_UNDO_STEPS = 10;
 
     // Hint Management
-    private int remainingHints = 3; // Số hint có thể sử dụng mỗi level
-    private const int MAX_HINTS_PER_LEVEL = 3;
+    private int remainingHints = 5;
+    private const int MAX_HINTS_PER_LEVEL = 50;
 
     #region Init Data
     private void OnEnable()
@@ -117,12 +117,8 @@ public class BoardController : Singleton<BoardController>
     {
         ClearUndoHistory();
 
-        // Reset hint counter
         remainingHints = MAX_HINTS_PER_LEVEL;
-
-        // Trigger UI update
         EventManager.HintCountChanged();
-
         int subLevelIndex = GameConfigSetting.Instance.GetCurrentSubLevel();
 
         if (LevelData.Instance.gameDir.ContainsKey(level) &&
@@ -149,11 +145,9 @@ public class BoardController : Singleton<BoardController>
             lstSquareComponents[i].SetNumber(data.unsolved_data[i]);
             lstSquareComponents[i].SetCorrectNumber(data.solved_data[i]);
 
-            // Kiểm tra và set default value
             bool isDefault = data.unsolved_data[i] != 0 && data.unsolved_data[i] == data.solved_data[i];
             lstSquareComponents[i].SetHasDefaultValue(isDefault);
 
-            // Debug log để kiểm tra default values
             if (isDefault)
             {
                 Debug.Log($"Square {i}: Set as DEFAULT - unsolved: {data.unsolved_data[i]}, solved: {data.solved_data[i]}");
@@ -165,22 +159,17 @@ public class BoardController : Singleton<BoardController>
     {
         if (currentBoardData == null) return;
 
-        // Kiểm tra còn hint không
         if (remainingHints <= 0)
         {
             Debug.Log("No hints remaining for this level");
             return;
         }
 
-        // Tạo danh sách tất cả squares có thể hint (không phải default và chưa đúng)
         var availableSquares = new List<int>();
 
         for (int i = 0; i < lstSquareComponents.Count; i++)
         {
             var square = lstSquareComponents[i];
-            // Chỉ thêm vào list nếu:
-            // 1. Không phải default value
-            // 2. Số hiện tại bằng 0 (trống) hoặc sai
             if (!square.GetHasDefaultValue() &&
                 (square.GetNumber() == 0 || square.HasWrongValue() || square.GetNumber() != currentBoardData.solved_data[i]))
             {
@@ -188,50 +177,57 @@ public class BoardController : Singleton<BoardController>
             }
         }
 
-        // Nếu không có square nào có thể hint
         if (availableSquares.Count == 0)
         {
             Debug.Log("No squares available for hint");
             return;
         }
 
-        // Random chọn một square từ danh sách available
         int randomIndex = UnityEngine.Random.Range(0, availableSquares.Count);
         int selectedIndex = availableSquares[randomIndex];
         var selectedSquare = lstSquareComponents[selectedIndex];
 
-        // Lấy số đúng từ solved_data
         int correctNumber = currentBoardData.solved_data[selectedIndex];
 
-        // Lưu undo state trước khi hint (nếu square hiện tại không trống)
         if (selectedSquare.GetNumber() != 0)
         {
             RegisterUndoState(selectedSquare);
         }
 
-        // Set số đúng cho square đó
         selectedSquare.SetNumber(correctNumber);
-        selectedSquare.SetHasDefaultValue(true); // Mark as default để không thể edit
-        selectedSquare.SetTextColor(Color.green); // Màu xanh để phân biệt với default ban đầu
+        selectedSquare.SetHasDefaultValue(true);
+        selectedSquare.SetTextColor(Color.blue);
 
         var horizontalLine = LineIndicator.Instance.GetHorizontalLine(selectedIndex);
         var verticalLine = LineIndicator.Instance.GetVerticallLine(selectedIndex);
         var squareGroup = LineIndicator.Instance.GetSquare(selectedIndex);
+
         SetSquaresColor(LineIndicator.Instance.GetAllSquareIndex(), Color.white);
+
         SetSquaresColor(horizontalLine, hightLightColor);
         SetSquaresColor(verticalLine, hightLightColor);
         SetSquaresColor(squareGroup, hightLightColor);
 
-        EventManager.SquareSeleced(-1);
+        selectedSquare.SetColor(hightLightColor);
+
+        Invoke("ClearHintHighlight", 1.5f);
 
         remainingHints--;
 
+        Debug.Log($"BoardController: Hint used, remainingHints = {remainingHints}");
         EventManager.HintCountChanged();
 
         if (AudioController.Instance != null)
         {
             AudioController.Instance.PlayRightNumberSound();
         }
+
+        // Check if puzzle is completed after hint
+        CheckPuzzleComplete();
+    }
+    private void ClearHintHighlight()
+    {
+        EventManager.SquareSeleced(-1);
     }
     private void SetSquaresColor(int[] data, Color color)
     {
@@ -247,6 +243,12 @@ public class BoardController : Singleton<BoardController>
     }
     public void OnSquareSelected(int square_index)
     {
+        if (square_index == -1)
+        {
+            SetSquaresColor(LineIndicator.Instance.GetAllSquareIndex(), Color.white);
+            return;
+        }
+
         var horizontalLine = LineIndicator.Instance.GetHorizontalLine(square_index);
         var verticalLine = LineIndicator.Instance.GetVerticallLine(square_index);
         var square = LineIndicator.Instance.GetSquare(square_index);
@@ -264,22 +266,90 @@ public class BoardController : Singleton<BoardController>
     {
         Debug.Log("Level Complete!");
 
+        // Reward coins for completing level
+        int coinReward = 50; // Base reward
+        GameManager.instance.AddCoins(coinReward);
+        Debug.Log($"Level completed! Earned {coinReward} coins");
+
+        // Get current level information for popup
+        string levelInfo = GetCurrentLevelInfo();
+
+        // Trigger level completed event with level info
+        EventManager.LevelCompleted(levelInfo);
+
         // Play win sound
         if (AudioController.Instance != null)
         {
             AudioController.Instance.PlayWinSound();
         }
 
-        bool hasNextLevel = GameConfigSetting.Instance.AdvanceToNextLevel();
+        // Don't auto advance level - let user click Next Level button
+        // bool hasNextLevel = GameConfigSetting.Instance.AdvanceToNextLevel();
+        // if (hasNextLevel)
+        // {
+        //     Invoke("LoadNextLevel", 3f);
+        // }
+        // else
+        // {
+        //     OnGameComplete();
+        // }
+    }
 
-        if (hasNextLevel)
+    private string GetCurrentLevelInfo()
+    {
+        if (GameConfigSetting.Instance != null)
         {
-            Invoke("LoadNextLevel", 2f);
+            string currentDifficulty = GameConfigSetting.Instance.GetCurrentDifficulty();
+            int currentSubLevel = GameConfigSetting.Instance.GetCurrentSubLevel();
+
+            // Calculate total level number
+            int totalLevel = CalculateTotalLevelFromProgression(currentDifficulty, currentSubLevel);
+
+            var allLevels = FixedSudokuLevelData.GetAllLevels();
+            if (totalLevel > 0 && totalLevel <= allLevels.Count)
+            {
+                var levelData = allLevels[totalLevel - 1]; // Convert to 0-based index
+                return $"Level {levelData.levelId} - {levelData.difficulty} Completed!";
+            }
+            else
+            {
+                return $"{currentDifficulty} Level Completed!";
+            }
         }
-        else
+
+        return "Level Completed!";
+    }
+
+    private int CalculateTotalLevelFromProgression(string difficulty, int subLevel)
+    {
+        int baseLevel = 0;
+
+        switch (difficulty)
         {
-            OnGameComplete();
+            case "Easy":
+                baseLevel = 0;
+                break;
+            case "Medium":
+                baseLevel = GetTotalSubLevelsForDifficulty("Easy");
+                break;
+            case "Hard":
+                baseLevel = GetTotalSubLevelsForDifficulty("Easy") + GetTotalSubLevelsForDifficulty("Medium");
+                break;
+            case "Impossible":
+                baseLevel = GetTotalSubLevelsForDifficulty("Easy") + GetTotalSubLevelsForDifficulty("Medium") + GetTotalSubLevelsForDifficulty("Hard");
+                break;
         }
+
+        return baseLevel + subLevel + 1; // +1 because levels are 1-based
+    }
+
+    private int GetTotalSubLevelsForDifficulty(string difficulty)
+    {
+        if (LevelData.Instance != null && LevelData.Instance.gameDir.ContainsKey(difficulty))
+        {
+            return LevelData.Instance.gameDir[difficulty].Count;
+        }
+        return 2; // Default fallback
     }
 
     private void LoadNextLevel()
@@ -288,6 +358,16 @@ public class BoardController : Singleton<BoardController>
         SetBoardNumber(nextLevel);
 
         ResetBoardState();
+    }
+
+    /// <summary>
+    /// Public method to load a specific level (called from UI)
+    /// </summary>
+    public void LoadLevel(string difficulty)
+    {
+        SetBoardNumber(difficulty);
+        ResetBoardState();
+        Debug.Log($"Loaded level: {difficulty}");
     }
 
     private void ResetBoardState()
@@ -339,19 +419,31 @@ public class BoardController : Singleton<BoardController>
     {
         if (undoStack.Count > 0)
         {
-            var undoState = undoStack.Pop();
-            var square = lstSquareComponents[undoState.squareIndex];
-
-            if (!square.GetHasDefaultValue())
+            // Check if player has enough coins
+            if (!GameManager.instance.CanAfford(GameManager.instance.GetUndoCost()))
             {
-                square.RestoreState(
-                    undoState.previousNumber,
-                    undoState.previousHasWrongValue,
-                    undoState.previousTextColor,
-                    undoState.previousBackgroundColor
-                );
-                EventManager.UndoCountChanged();
-                AudioController.Instance.PlayUndoSound();
+                Debug.Log("Not enough coins for undo!");
+                // You can add UI notification here
+                return;
+            }
+
+            // Spend coins for undo
+            if (GameManager.instance.SpendCoins(GameManager.instance.GetUndoCost()))
+            {
+                var undoState = undoStack.Pop();
+                var square = lstSquareComponents[undoState.squareIndex];
+
+                if (!square.GetHasDefaultValue())
+                {
+                    square.RestoreState(
+                        undoState.previousNumber,
+                        undoState.previousHasWrongValue,
+                        undoState.previousTextColor,
+                        undoState.previousBackgroundColor
+                    );
+                    EventManager.UndoCountChanged();
+                    AudioController.Instance.PlayUndoSound();
+                }
             }
         }
     }
@@ -363,6 +455,12 @@ public class BoardController : Singleton<BoardController>
     {
         return undoStack.Count;
     }
+
+    public int GetHintCount()
+    {
+        Debug.Log($"BoardController: GetHintCount called, returning {remainingHints}");
+        return remainingHints;
+    }
     public void ClearUndoHistory()
     {
         undoStack.Clear();
@@ -372,25 +470,16 @@ public class BoardController : Singleton<BoardController>
     #endregion
 
     #region Hint Management
-    /// <summary>
-    /// Lấy số hint còn lại
-    /// </summary>
     public int GetRemainingHints()
     {
         return remainingHints;
     }
 
-    /// <summary>
-    /// Kiểm tra có thể sử dụng hint không
-    /// </summary>
     public bool CanUseHint()
     {
         return remainingHints > 0;
     }
 
-    /// <summary>
-    /// Debug method - hiển thị tất cả default squares
-    /// </summary>
     public void DebugShowDefaultSquares()
     {
         Debug.Log("=== DEFAULT SQUARES DEBUG ===");
@@ -403,6 +492,89 @@ public class BoardController : Singleton<BoardController>
             }
         }
         Debug.Log("=== END DEBUG ===");
+    }
+
+    public List<Square> GetSquareComponents()
+    {
+        return lstSquareComponents;
+    }
+
+    /// <summary>
+    /// Check if puzzle is completed
+    /// </summary>
+    public void CheckPuzzleComplete()
+    {
+        if (currentBoardData == null) return;
+
+        // Check if all squares have correct numbers
+        for (int i = 0; i < lstSquareComponents.Count; i++)
+        {
+            var square = lstSquareComponents[i];
+            int currentNumber = square.GetNumber();
+            int correctNumber = currentBoardData.solved_data[i];
+
+            // If any square is empty (0) or has wrong number, puzzle is not complete
+            if (currentNumber == 0 || currentNumber != correctNumber)
+            {
+                return; // Puzzle not complete yet
+            }
+        }
+
+        // If we reach here, all squares have correct numbers
+        Debug.Log("Puzzle Complete! All squares filled correctly!");
+        EventManager.PuzzleComplete();
+    }
+    [ContextMenu("Toggle Debug Mode")]
+    public void ToggleDebugMode()
+    {
+        if (GameManager.instance != null)
+        {
+            GameManager.instance.ToggleDebugMode();
+        }
+    }
+
+    /// <summary>
+    /// Debug method to manually trigger puzzle complete check
+    /// </summary>
+    [ContextMenu("Check Puzzle Complete")]
+    public void DebugCheckPuzzleComplete()
+    {
+        CheckPuzzleComplete();
+    }
+
+    /// <summary>
+    /// Debug method to show puzzle completion status
+    /// </summary>
+    [ContextMenu("Show Puzzle Status")]
+    public void DebugShowPuzzleStatus()
+    {
+        if (currentBoardData == null)
+        {
+            Debug.Log("No board data available");
+            return;
+        }
+
+        int correctCount = 0;
+        int totalSquares = lstSquareComponents.Count;
+
+        Debug.Log("=== PUZZLE STATUS ===");
+        for (int i = 0; i < lstSquareComponents.Count; i++)
+        {
+            var square = lstSquareComponents[i];
+            int currentNumber = square.GetNumber();
+            int correctNumber = currentBoardData.solved_data[i];
+            bool isCorrect = currentNumber != 0 && currentNumber == correctNumber;
+
+            if (isCorrect) correctCount++;
+
+            if (!isCorrect)
+            {
+                Debug.Log($"Square {i}: Current={currentNumber}, Correct={correctNumber} - {(currentNumber == 0 ? "EMPTY" : "WRONG")}");
+            }
+        }
+
+        Debug.Log($"Progress: {correctCount}/{totalSquares} squares correct ({(float)correctCount / totalSquares * 100:F1}%)");
+        Debug.Log("=== END STATUS ===");
     }
     #endregion
 }

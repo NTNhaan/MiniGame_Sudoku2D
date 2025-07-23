@@ -57,7 +57,6 @@ public class GameConfigSetting : Singleton<GameConfigSetting>
             case EGameMode.HARD: return "Hard";
             case EGameMode.IMPOSSIBLE: return "Impossible";
         }
-        Debug.LogError($"ERROR: Game level is not set {gameMode}");
         return " ";
     }
 
@@ -127,6 +126,22 @@ public class GameConfigSetting : Singleton<GameConfigSetting>
         EventManager.LevelChanged();
 
         return true;
+    }
+
+    /// <summary>
+    /// Reset progression to the first level (Easy level 0)
+    /// </summary>
+    public void ResetToFirstLevel()
+    {
+        currentDifficultyIndex = 0; // Easy
+        currentSubLevelIndex = 0;   // First level
+
+        SetGameModeByProgression();
+        SaveProgression();
+
+        Debug.Log("Game progression reset to first level (Easy)");
+
+        EventManager.LevelChanged();
     }
 
     private int GetMaxSubLevelsForDifficulty(int difficultyIndex)

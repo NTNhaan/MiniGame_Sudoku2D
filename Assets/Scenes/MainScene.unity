@@ -772,7 +772,7 @@ GameObject:
   - component: {fileID: 196381038}
   - component: {fileID: 196381037}
   m_Layer: 5
-  m_Name: text
+  m_Name: txtCoin
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -794,8 +794,8 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: 51, y: -1.7}
-  m_SizeDelta: {x: 148.2, y: 74.3}
+  m_AnchoredPosition: {x: 58.7, y: -1.7}
+  m_SizeDelta: {x: 148.2, y: 98.5}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &196381037
 MonoBehaviour:
@@ -819,18 +819,18 @@ MonoBehaviour:
       m_Calls: []
   m_FontData:
     m_Font: {fileID: 12800000, guid: 07778b462d3a8b543b353bc27c49b9fc, type: 3}
-    m_FontSize: 14
+    m_FontSize: 92
     m_FontStyle: 0
     m_BestFit: 1
     m_MinSize: 10
-    m_MaxSize: 40
+    m_MaxSize: 92
     m_Alignment: 3
     m_AlignByGeometry: 0
     m_RichText: 1
     m_HorizontalOverflow: 0
     m_VerticalOverflow: 0
     m_LineSpacing: 1
-  m_Text: 999999
+  m_Text: 9
 --- !u!222 &196381038
 CanvasRenderer:
   m_ObjectHideFlags: 0
@@ -2640,13 +2640,13 @@ MonoBehaviour:
   m_OnClick:
     m_PersistentCalls:
       m_Calls:
-      - m_Target: {fileID: 9136114819887463481}
-        m_TargetAssemblyTypeName: 
-        m_MethodName: 
+      - m_Target: {fileID: 8323244872267998520}
+        m_TargetAssemblyTypeName: UIManager, Assembly-CSharp
+        m_MethodName: OnCLickShowShopIAP
         m_Mode: 1
         m_Arguments:
           m_ObjectArgument: {fileID: 0}
-          m_ObjectArgumentAssemblyTypeName: 
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
           m_IntArgument: 0
           m_FloatArgument: 0
           m_StringArgument: 
@@ -3367,6 +3367,7 @@ GameObject:
   - component: {fileID: 744446034}
   - component: {fileID: 744446035}
   - component: {fileID: 744446036}
+  - component: {fileID: 744446037}
   m_Layer: 0
   m_Name: GameManager
   m_TagString: Untagged
@@ -3401,6 +3402,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: dc07aad673287894a98c58809fbe5962, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  showCorrectNumberDebug: 1
   panelGameOver: {fileID: 1689873713}
 --- !u!114 &744446036
 MonoBehaviour:
@@ -3452,6 +3454,22 @@ MonoBehaviour:
     volume: 1
     source: {fileID: 0}
     loop: 0
+--- !u!114 &744446037
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 744446032}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 5ff6d21484e8cae43b8460c4619d68c0, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  _dontDestroyOnLoad: 0
+  gameMode: 0
+  currentDifficultyIndex: 0
+  currentSubLevelIndex: 0
 --- !u!1 &775491817
 GameObject:
   m_ObjectHideFlags: 0
@@ -7089,7 +7107,7 @@ MonoBehaviour:
     m_HorizontalOverflow: 0
     m_VerticalOverflow: 0
     m_LineSpacing: 1
-  m_Text: Level 10
+  m_Text: Level 1
 --- !u!222 &1523020525
 CanvasRenderer:
   m_ObjectHideFlags: 0
@@ -7556,7 +7574,7 @@ MonoBehaviour:
       m_Calls:
       - m_Target: {fileID: 8323244872267998520}
         m_TargetAssemblyTypeName: UIManager, Assembly-CSharp
-        m_MethodName: RestartGame
+        m_MethodName: OnClickHideShopIAP
         m_Mode: 1
         m_Arguments:
           m_ObjectArgument: {fileID: 0}
@@ -8069,7 +8087,7 @@ MonoBehaviour:
       m_Calls:
       - m_Target: {fileID: 8323244872267998520}
         m_TargetAssemblyTypeName: UIManager, Assembly-CSharp
-        m_MethodName: RestartGame
+        m_MethodName: NextLevel
         m_Mode: 1
         m_Arguments:
           m_ObjectArgument: {fileID: 0}
@@ -8957,7 +8975,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_Material: {fileID: 0}
-  m_Color: {r: 0, g: 0, b: 0, a: 0.87058824}
+  m_Color: {r: 0, g: 0, b: 0, a: 0.92941177}
   m_RaycastTarget: 1
   m_RaycastPadding: {x: 0, y: 0, z: 0, w: 0}
   m_Maskable: 1
@@ -9827,7 +9845,7 @@ MonoBehaviour:
     m_HorizontalOverflow: 0
     m_VerticalOverflow: 0
     m_LineSpacing: 1
-  m_Text: Level 10 Failed
+  m_Text: Level Failed
 --- !u!222 &2113600092
 CanvasRenderer:
   m_ObjectHideFlags: 0
@@ -10728,23 +10746,26 @@ MonoBehaviour:
   m_GameObject: {fileID: 9136114819887463481}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 49a52b53ebf9ce843ae689d25cb7d27a, type: 3}
+  m_Script: {fileID: 11500000, guid: 7aeb44251b1f2fa428e692453c391b2a, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
   highScore: 0
   scoreText: {fileID: 7373968065297205303}
   HealthPlayer: {fileID: 8036025074149798189}
-  PanelScoreText: {fileID: 2492672970823372433}
-  HighScoreText: {fileID: 2252787336460321075}
+  imgCover: {fileID: 1989900240}
   scoreManager: {fileID: 744446035}
   PopupShopIAP: {fileID: 375267666}
+  PopupWin: {fileID: 1685541774}
+  textLevelPopup: {fileID: 343148600}
   lstImgHealth:
   - {fileID: 1591610697}
   - {fileID: 1905491885}
   - {fileID: 140133017}
   imgHealthNonColor: {fileID: 2621400381275573629, guid: e2d6d82a18243e74e83024d147bc61b2, type: 3}
   LevelTxt: {fileID: 1523020524}
-  UndoCountTxt: {fileID: 0}
+  HintCountTxt: {fileID: 478175093}
+  CoinCountTxt: {fileID: 196381037}
+  DebugTxt: {fileID: 0}
 --- !u!114 &8368443749602640245
 MonoBehaviour:
   m_ObjectHideFlags: 0

@@ -50,6 +50,11 @@ public class LineIndicator : Singleton<LineIndicator>
 
     private LinePosition GetSquarePosition(int square_index)
     {
+        if (square_index < 0 || square_index > 80)
+        {
+            return new LinePosition(-1, -1);
+        }
+
         int rowPos = -1;
         int colPos = -1;
         for (int row = 0; row < 9; row++)
@@ -70,6 +75,12 @@ public class LineIndicator : Singleton<LineIndicator>
     {
         int[] line = new int[9];
         var squarePos = GetSquarePosition(square_index);
+
+        if (squarePos.row < 0 || squarePos.row >= 9 || squarePos.col < 0 || squarePos.col >= 9)
+        {
+            return line;
+        }
+
         for (int index = 0; index < 9; index++)
         {
             line[index] = line_data[squarePos.row, index];
@@ -80,6 +91,12 @@ public class LineIndicator : Singleton<LineIndicator>
     {
         int[] line = new int[9];
         var squarePos = GetSquarePosition(square_index);
+
+        if (squarePos.row < 0 || squarePos.row >= 9 || squarePos.col < 0 || squarePos.col >= 9)
+        {
+            return line;
+        }
+
         for (int index = 0; index < 9; index++)
         {
             line[index] = line_data[index, squarePos.col];
@@ -98,9 +115,17 @@ public class LineIndicator : Singleton<LineIndicator>
                 if (square_data[row, col] == square_index)
                 {
                     pos_row = row;
+                    break;
                 }
             }
+            if (pos_row != -1) break;
         }
+
+        if (pos_row < 0 || pos_row >= 9)
+        {
+            return line;
+        }
+
         for (int index = 0; index < 9; index++)
         {
             line[index] = square_data[pos_row, index];

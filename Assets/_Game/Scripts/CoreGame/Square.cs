@@ -24,14 +24,7 @@ public class Square : Selectable, IPointerClickHandler, ISubmitHandler, IPointer
     private bool previousHasWrongValue = false;
     private Color previousTextColor = Color.black;
     private Color previousBackgroundColor = Color.white;
-    public void SetHasDefaultValue(bool isHasDefault)
-    {
-        if (hasDefaultValue != isHasDefault)
-        {
-            Debug.Log($"Square {square_index}: SetHasDefaultValue changed from {hasDefaultValue} to {isHasDefault} - Current number: {number}");
-        }
-        hasDefaultValue = isHasDefault;
-    }
+    public void SetHasDefaultValue(bool isHasDefault) { hasDefaultValue = isHasDefault; }
     public bool GetHasDefaultValue() { return hasDefaultValue; }
     public bool HasWrongValue() { return hasWrongValue; }
     public bool IsSelected() { return isSelected; }
@@ -115,14 +108,30 @@ public class Square : Selectable, IPointerClickHandler, ISubmitHandler, IPointer
     {
         isSelected = true;
         EventManager.SquareSeleced(square_index);
+        AudioController.Instance.PlayClickSound();
 
-        // Debug information
-        Debug.Log($"Square {square_index} clicked - Number: {number}, IsDefault: {hasDefaultValue}, CorrectNumber: {correctNumber}");
-
-        // Play click sound
-        if (AudioController.Instance != null)
+        // Debug feature: Show correct number when square is selected
+        if (GameManager.instance != null && GameManager.instance.ShowCorrectNumberDebug)
         {
-            AudioController.Instance.PlayClickSound();
+            string debugInfo = $"Square {square_index}: Current={number}, Correct={correctNumber}";
+            if (hasDefaultValue)
+            {
+                debugInfo += " [DEFAULT]";
+            }
+            if (number == correctNumber && number != 0)
+            {
+                debugInfo += " ✓ CORRECT";
+            }
+            else if (number != 0 && number != correctNumber)
+            {
+                debugInfo += " ✗ WRONG";
+            }
+            else if (number == 0)
+            {
+                debugInfo += " [EMPTY]";
+            }
+
+            Debug.Log($"[DEBUG] {debugInfo}");
         }
     }
     public void OnSubmit(BaseEventData eventData)
@@ -131,8 +140,6 @@ public class Square : Selectable, IPointerClickHandler, ISubmitHandler, IPointer
     }
     public void OnSetNumber(int number)
     {
-        Debug.Log($"Square {square_index}: OnSetNumber({number}) - isSelected: {isSelected}, hasDefaultValue: {hasDefaultValue}, hasWrongValue: {hasWrongValue}");
-
         if (isSelected && !hasDefaultValue && !hasWrongValue)
         {
             SaveCurrentState();
@@ -146,8 +153,6 @@ public class Square : Selectable, IPointerClickHandler, ISubmitHandler, IPointer
                 SetNotesNumberValue(0);
                 SetNumber(number);
                 SetTextColor(Color.blue);
-
-                // Đăng ký với BoardController sau khi set number
                 if (BoardController.Instance != null)
                 {
                     BoardController.Instance.RegisterUndoState(this);
@@ -158,8 +163,6 @@ public class Square : Selectable, IPointerClickHandler, ISubmitHandler, IPointer
                     hasWrongValue = true;
                     SetColor(Color.red);
                     EventManager.SelectWrongNumber();
-
-                    // Play wrong number sound
                     if (AudioController.Instance != null)
                     {
                         AudioController.Instance.PlayWrongNumberSound();
@@ -169,18 +172,18 @@ public class Square : Selectable, IPointerClickHandler, ISubmitHandler, IPointer
                 {
                     hasWrongValue = false;
                     SetColor(Color.white);
-
-                    // Play right number sound
                     if (AudioController.Instance != null)
                     {
                         AudioController.Instance.PlayRightNumberSound();
                     }
+
+                    // Check if puzzle is completed after setting correct number
+                    if (BoardController.Instance != null)
+                    {
+                        BoardController.Instance.CheckPuzzleComplete();
+                    }
                 }
             }
-        }
-        else
-        {
-            Debug.Log($"Square {square_index}: OnSetNumber BLOCKED - Conditions not met");
         }
     }
     public void OnSquareSelected(int square_index)
@@ -202,10 +205,6 @@ public class Square : Selectable, IPointerClickHandler, ISubmitHandler, IPointer
         {
             int randomIndex = Random.Range(0, lstSprSquare.Count);
             imgSquare.sprite = lstSprSquare[randomIndex];
-        }
-        else
-        {
-            Debug.LogWarning("lstSprSquare is null, empty, or imgSquare is null!");
         }
     }
 
@@ -296,6 +295,21 @@ public class Square : Selectable, IPointerClickHandler, ISubmitHandler, IPointer
 
             // Visual feedback - flash red briefly để báo không thể xóa
             StartCoroutine(FlashCannotEraseEffect());
+            return;
+        }
+
+        // Check if player has enough coins for erase
+        if (!GameManager.instance.CanAfford(GameManager.instance.GetEraseCost()))
+        {
+            Debug.Log($"Square {square_index}: Not enough coins for erase!");
+            // You can add UI notification here
+            return;
+        }
+
+        // Spend coins for erase
+        if (!GameManager.instance.SpendCoins(GameManager.instance.GetEraseCost()))
+        {
+            Debug.Log($"Square {square_index}: Failed to spend coins for erase");
             return;
         }
 
