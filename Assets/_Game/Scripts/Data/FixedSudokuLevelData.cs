@@ -23,17 +23,45 @@ public class FixedSudokuLevel
     }
 }
 
-public class FixedSudokuLevelData
+[CreateAssetMenu(fileName = "SudokuLevelData", menuName = "Sudoku/Level Data")]
+public class FixedSudokuLevelData : ScriptableObject
 {
-    private static List<FixedSudokuLevel> allLevels;
-
-    public static void InitializeLevels()
+    private static FixedSudokuLevelData instance;
+    public static FixedSudokuLevelData Instance
     {
-        allLevels = new List<FixedSudokuLevel>();
+        get
+        {
+            if (instance == null)
+            {
+                instance = Resources.Load<FixedSudokuLevelData>("SudokuLevelData");
+                if (instance == null)
+                {
+                    instance = CreateInstance<FixedSudokuLevelData>();
+                    instance.CreateLevels();
+                }
+            }
+            return instance;
+        }
+    }
+
+    [SerializeField] private List<FixedSudokuLevel> allLevels = new List<FixedSudokuLevel>();
+
+    private void OnEnable()
+    {
+        instance = this;
+        if (allLevels == null || allLevels.Count == 0)
+        {
+            CreateLevels();
+        }
+    }
+
+    public void CreateLevels()
+    {
+        allLevels.Clear();
         CreateAllLevels();
     }
 
-    private static void CreateAllLevels()
+    private void CreateAllLevels()
     {
         // Tạo 5 bảng Sudoku solved khác nhau
         List<int[]> solvedBoards = new List<int[]>
@@ -108,25 +136,25 @@ public class FixedSudokuLevelData
             else if (i < 40) { difficulties[i] = "Hard"; cluesToRemove[i] = 50 + (i % 5); }
             else if (i < 45) { difficulties[i] = "Very Hard"; cluesToRemove[i] = 55 + (i % 5); }
             else { difficulties[i] = "Extreme"; cluesToRemove[i] = 60 + (i % 5); }
+        }
 
-            // Tạo 50 level từ 5 bảng gốc
-            for (int levelIndex = 0; levelIndex < 50; levelIndex++)
-            {
-                int[] solvedData = new int[81];
-                // Chọn một trong 5 bảng gốc theo thứ tự xoay vòng
-                System.Array.Copy(solvedBoards[levelIndex % 5], solvedData, 81);
+        // Tạo 50 level từ 5 bảng gốc
+        for (int levelIndex = 0; levelIndex < 50; levelIndex++)
+        {
+            int[] solvedData = new int[81];
+            // Chọn một trong 5 bảng gốc theo thứ tự xoay vòng
+            System.Array.Copy(solvedBoards[levelIndex % 5], solvedData, 81);
 
-                int[] unsolvedData = new int[81];
-                System.Array.Copy(solvedData, unsolvedData, 81);
-                RemoveRandomClues(unsolvedData, cluesToRemove[levelIndex]);
+            int[] unsolvedData = new int[81];
+            System.Array.Copy(solvedData, unsolvedData, 81);
+            RemoveRandomClues(unsolvedData, cluesToRemove[levelIndex]);
 
-                allLevels.Add(new FixedSudokuLevel(
-                    levelIndex + 1,
-                    difficulties[levelIndex],
-                    unsolvedData,
-                    solvedData
-                ));
-            }
+            allLevels.Add(new FixedSudokuLevel(
+                levelIndex + 1,
+                difficulties[levelIndex],
+                unsolvedData,
+                solvedData
+            ));
         }
     }
     private static void RemoveRandomClues(int[] data, int totalCluesToRemove)
@@ -158,35 +186,26 @@ public class FixedSudokuLevelData
 
     public static List<FixedSudokuLevel> GetAllLevels()
     {
-        if (allLevels == null || allLevels.Count == 0)
-        {
-            InitializeLevels();
-        }
-        return allLevels;
+        return Instance.allLevels;
     }
 
     public static FixedSudokuLevel GetLevel(int levelId)
     {
-        var levels = GetAllLevels();
-        return levels.Find(level => level.levelId == levelId);
+        return Instance.allLevels.Find(level => level.levelId == levelId);
     }
 
     public static List<FixedSudokuLevel> GetLevelsByDifficulty(string difficulty)
     {
-        var levels = GetAllLevels();
-        return levels.FindAll(level => level.difficulty == difficulty);
+        return Instance.allLevels.FindAll(level => level.difficulty == difficulty);
     }
 
     public static List<BoardData> GetBoardDataList()
     {
-        var levels = GetAllLevels();
         List<BoardData> boardDataList = new List<BoardData>();
-
-        foreach (var level in levels)
+        foreach (var level in Instance.allLevels)
         {
             boardDataList.Add(level.ToBoardData());
         }
-
         return boardDataList;
     }
 
@@ -215,16 +234,12 @@ public class FixedSudokuLevelData
 
     public static void ValidateAllLevels()
     {
-        var levels = GetAllLevels();
-        bool allValid = true;
-
-        foreach (var level in levels)
+        foreach (var level in Instance.allLevels)
         {
             if (!ValidateLevel(level))
             {
-                allValid = false;
+                Debug.LogError($"Level {level.levelId} is invalid!");
             }
         }
-
     }
 }
