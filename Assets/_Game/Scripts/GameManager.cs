@@ -5,7 +5,7 @@ using UnityEngine;
 using UnityEngine.UI;
 using UnityEngine.Events;
 using DG.Tweening;
-public class GameManager : MonoBehaviour
+public class GameManager : Singleton<GameManager>
 {
     private const string HIGH_SCORE_KEY = "HighScore";
     private const string COINS_KEY = "PlayerCoins";
@@ -44,7 +44,10 @@ public class GameManager : MonoBehaviour
 
         OnCoinsChanged?.Invoke(Coins);
     }
+    public void UpdateCoin()
+    {
 
+    }
     void Update()
     {
         CheckGameOver();
