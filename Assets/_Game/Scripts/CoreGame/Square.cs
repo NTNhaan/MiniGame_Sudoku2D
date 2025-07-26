@@ -140,11 +140,11 @@ public class Square : Selectable, IPointerClickHandler, ISubmitHandler, IPointer
     }
     public void OnSetNumber(int number)
     {
-        if (isSelected && !hasDefaultValue && !hasWrongValue)
+        if (isSelected && !hasDefaultValue)  // Removed !hasWrongValue condition
         {
             SaveCurrentState();
 
-            if (isNoteActive && !hasWrongValue)
+            if (isNoteActive)  // Removed !hasWrongValue condition
             {
                 SetNoteSingleNumberValue(number);
             }

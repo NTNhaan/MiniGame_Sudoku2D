@@ -1,5 +1,4 @@
 using System.Collections.Generic;
-using Unity.Android.Gradle.Manifest;
 using UnityEngine;
 using UnityEngine.UI;
 using Utils;
@@ -25,7 +24,7 @@ public class BoardController : Singleton<BoardController>
 
     // Hint Management
     private int remainingHints = 5;
-    private const int MAX_HINTS_PER_LEVEL = 50;
+    private const int MAX_HINTS_PER_LEVEL = 5;
 
     #region Init Data
     private void OnEnable()
@@ -155,14 +154,33 @@ public class BoardController : Singleton<BoardController>
         }
     }
 
+    private const int HINT_COST = 100;
+
     private void OnHintNumber()
     {
         if (currentBoardData == null) return;
 
         if (remainingHints <= 0)
         {
-            Debug.Log("No hints remaining for this level");
-            return;
+            // Kiểm tra xem người chơi có đủ coins để mua hint không
+            if (!GameManager.instance.CanAfford(GameManager.instance.GetHintCost()))
+            {
+                Debug.Log($"Not enough coins to buy hint! Need {HINT_COST} coins");
+                EventManager.ShowNotEnoughCoinsMessage(HINT_COST); // Thông báo không đủ tiền
+                return;
+            }
+
+            // Nếu đủ tiền, trừ coins và tiếp tục sử dụng hint
+            if (!GameManager.instance.SpendCoins(GameManager.instance.GetHintCost()))
+            {
+                return;
+            }
+
+            Debug.Log($"Bought hint for {HINT_COST} coins");
+        }
+        else
+        {
+            Debug.Log($"Using free hint. Remaining: {remainingHints - 1}");
         }
 
         var availableSquares = new List<int>();

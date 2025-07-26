@@ -1,9 +1,6 @@
 using UnityEngine;
 using System.Collections;
 using System.Collections.Generic;
-using UnityEditor.UI;
-using UnityEditor.Events;
-using UnityEditor.EventSystems;
 using UnityEngine.UI;
 using UnityEngine.EventSystems;
 public class NumberButton : Selectable, IPointerClickHandler, ISubmitHandler, IPointerUpHandler, IPointerExitHandler

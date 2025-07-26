@@ -11,8 +11,8 @@ public class GameManager : MonoBehaviour
     private const string COINS_KEY = "PlayerCoins";
     private const int UNDO_COST = 10;
     private const int ERASE_COST = 5;
+    private const int HINT_COST = 20;
 
-    // Debug feature
     [SerializeField] private bool showCorrectNumberDebug = false;
     public bool ShowCorrectNumberDebug => showCorrectNumberDebug;
 
@@ -37,12 +37,11 @@ public class GameManager : MonoBehaviour
     {
         Score = 0;
         HealthPlayer = 3;
-        Coins = PlayerPrefs.GetInt(COINS_KEY, 100); // Start with 100 coins
+        Coins = PlayerPrefs.GetInt(COINS_KEY, 100);
         EventManager.OnAddPoints += HandleAddPoints;
         EventManager.OnHPchanged += HandleHealPlayer;
         HighScore = PlayerPrefs.GetInt(HIGH_SCORE_KEY);
 
-        // Trigger initial coin UI update
         OnCoinsChanged?.Invoke(Coins);
     }
 
@@ -143,7 +142,10 @@ public class GameManager : MonoBehaviour
     {
         return ERASE_COST;
     }
-
+    public int GetHintCost()
+    {
+        return HINT_COST;
+    }
     #region Debug Features
     [ContextMenu("Toggle Debug Mode")]
     public void ToggleDebugMode()

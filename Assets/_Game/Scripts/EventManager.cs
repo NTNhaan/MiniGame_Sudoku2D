@@ -54,5 +54,8 @@ public static class EventManager
 
     public static event UnityAction OnHintCountChanged;
     public static void HintCountChanged() => OnHintCountChanged?.Invoke();
+
+    public static event UnityAction<int> OnShowNotEnoughCoinsMessage;
+    public static void ShowNotEnoughCoinsMessage(int requiredCoins) => OnShowNotEnoughCoinsMessage?.Invoke(requiredCoins);
     #endregion
 }

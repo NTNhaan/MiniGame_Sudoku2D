@@ -34,6 +34,10 @@ public class UIManager : MonoBehaviour
     private int health = 0;
     private int errorNumber = 0;
 
+    [SerializeField] private GameObject EnoughCoinsPopup;
+    [SerializeField] private GameObject notEnoughCoinsPopup;
+    [SerializeField] private Text notEnoughCoinsText;
+
     void Start()
     {
         health = GameManager.instance.HealthPlayer;
@@ -49,6 +53,7 @@ public class UIManager : MonoBehaviour
         EventManager.OnUndoCountChanged += UpdateUndoCount;
         EventManager.OnHintCountChanged += UpdateHintCount;
         EventManager.OnSquareSelected += UpdateDebugDisplay;
+        EventManager.OnShowNotEnoughCoinsMessage += ShowNotEnoughCoinsPopup;
 
         StartCoroutine(UpdateLevelTextWithDelay());
         UpdateUndoCount();
@@ -94,6 +99,25 @@ public class UIManager : MonoBehaviour
 
         if (BoardController.Instance != null)
         {
+            UpdateHintCount();
+        }
+    }
+
+    private void ShowNotEnoughCoinsPopup(int requiredCoins)
+    {
+        if (notEnoughCoinsPopup != null)
+        {
+            EnoughCoinsPopup.SetActive(false);
+            notEnoughCoinsPopup.SetActive(true);
+        }
+    }
+
+    private IEnumerator HideNotEnoughCoinsPopup()
+    {
+        yield return new WaitForSeconds(2f);
+        if (notEnoughCoinsPopup != null)
+        {
+            // Chỉ ẩn/hiện popup dựa trên số hint còn lại
             UpdateHintCount();
         }
     }
@@ -247,6 +271,29 @@ public class UIManager : MonoBehaviour
         {
             int hintCount = BoardController.Instance.GetHintCount();
             HintCountTxt.text = hintCount.ToString();
+
+            // Khi hint = 0, hiển thị notEnoughCoinsPopup và ẩn EnoughCoinsPopup
+            if (hintCount <= 0)
+            {
+                if (notEnoughCoinsPopup != null && EnoughCoinsPopup != null)
+                {
+                    EnoughCoinsPopup.SetActive(false);
+                    notEnoughCoinsPopup.SetActive(true);
+                    if (notEnoughCoinsText != null)
+                    {
+                        notEnoughCoinsText.text = GameManager.instance.GetHintCost().ToString();
+                    }
+                }
+            }
+            else
+            {
+                // Khi còn hint, hiển thị EnoughCoinsPopup và ẩn notEnoughCoinsPopup
+                if (notEnoughCoinsPopup != null && EnoughCoinsPopup != null)
+                {
+                    EnoughCoinsPopup.SetActive(true);
+                    notEnoughCoinsPopup.SetActive(false);
+                }
+            }
         }
     }
     public void UpdateHintCount(int dummy)
