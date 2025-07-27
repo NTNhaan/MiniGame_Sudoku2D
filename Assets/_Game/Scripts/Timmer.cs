@@ -1,14 +1,26 @@
 using System;
 using UnityEngine;
 using UnityEngine.UI;
+using Utils;
 
-public class Timmer : MonoBehaviour
+public class Timmer : Singleton<Timmer>
 {
     [SerializeField] private Text textTime;
     private int second = 0;
     private int minute = 0;
     private float deltaTime;
     private bool stopClock = false;
+    public bool StopLock => stopClock;
+
+    public void PauseTime()
+    {
+        stopClock = true;
+    }
+
+    public void ResumeTime()
+    {
+        stopClock = false;
+    }
 
     #region Init Data
     private void OnEnable()

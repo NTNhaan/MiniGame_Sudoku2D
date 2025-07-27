@@ -1,10 +1,10 @@
 using System.Collections;
 using System.Collections.Generic;
-using Unity.VisualScripting;
 using UnityEngine;
 using UnityEngine.UI;
 using UnityEngine.Events;
 using DG.Tweening;
+using Utils;
 public class GameManager : Singleton<GameManager>
 {
     private const string HIGH_SCORE_KEY = "HighScore";
@@ -37,16 +37,19 @@ public class GameManager : Singleton<GameManager>
     {
         Score = 0;
         HealthPlayer = 3;
-        Coins = PlayerPrefs.GetInt(COINS_KEY, 100);
+        Coins = DatabaseController.Instance.Coin;
         EventManager.OnAddPoints += HandleAddPoints;
         EventManager.OnHPchanged += HandleHealPlayer;
         HighScore = PlayerPrefs.GetInt(HIGH_SCORE_KEY);
 
         OnCoinsChanged?.Invoke(Coins);
     }
+
     public void UpdateCoin()
     {
-
+        Coins = DatabaseController.Instance.Coin;
+        Debug.Log($"Check coin Update: {Coins}");
+        OnCoinsChanged?.Invoke(Coins);
     }
     void Update()
     {
@@ -111,9 +114,8 @@ public class GameManager : Singleton<GameManager>
     {
         if (CanAfford(amount))
         {
-            Coins -= amount;
-            PlayerPrefs.SetInt(COINS_KEY, Coins);
-            PlayerPrefs.Save();
+            DatabaseController.Instance.Coin -= amount;
+            Coins = DatabaseController.Instance.Coin;
             OnCoinsChanged?.Invoke(Coins);
             Debug.Log($"Spent {amount} coins. Remaining: {Coins}");
             return true;
@@ -124,9 +126,8 @@ public class GameManager : Singleton<GameManager>
 
     public void AddCoins(int amount)
     {
-        Coins += amount;
-        PlayerPrefs.SetInt(COINS_KEY, Coins);
-        PlayerPrefs.Save();
+        DatabaseController.Instance.Coin += amount;
+        Coins = DatabaseController.Instance.Coin;
         OnCoinsChanged?.Invoke(Coins);
         Debug.Log($"Added {amount} coins. Total: {Coins}");
     }

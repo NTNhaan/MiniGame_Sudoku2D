@@ -63,7 +63,6 @@ public class FixedSudokuLevelData : ScriptableObject
 
     private void CreateAllLevels()
     {
-        // Tạo 5 bảng Sudoku solved khác nhau
         List<int[]> solvedBoards = new List<int[]>
         {
             new int[81] { // Board 1
@@ -123,11 +122,9 @@ public class FixedSudokuLevelData : ScriptableObject
             }
         };
 
-        // Mở rộng mảng độ khó và số ô cần xóa
         string[] difficulties = new string[50];
         int[] cluesToRemove = new int[50];
 
-        // Thiết lập độ khó và số ô cần xóa cho 50 level
         for (int i = 0; i < 50; i++)
         {
             if (i < 10) { difficulties[i] = "Very Easy"; cluesToRemove[i] = 35 + (i % 5); }
@@ -138,11 +135,9 @@ public class FixedSudokuLevelData : ScriptableObject
             else { difficulties[i] = "Extreme"; cluesToRemove[i] = 60 + (i % 5); }
         }
 
-        // Tạo 50 level từ 5 bảng gốc
         for (int levelIndex = 0; levelIndex < 50; levelIndex++)
         {
             int[] solvedData = new int[81];
-            // Chọn một trong 5 bảng gốc theo thứ tự xoay vòng
             System.Array.Copy(solvedBoards[levelIndex % 5], solvedData, 81);
 
             int[] unsolvedData = new int[81];

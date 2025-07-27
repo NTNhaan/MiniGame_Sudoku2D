@@ -20,7 +20,7 @@ public class LineIndicator : Singleton<LineIndicator>
         { 72, 73, 74, 75, 76, 77, 78, 79, 80 }
     };
 
-    private int[] line_data_falt = new int[81]  // get all index
+    private int[] line_data_falt = new int[81]
     {
         0,  1,  2,  3,  4,  5,  6,  7,  8,
         9, 10, 11, 12, 13, 14, 15, 16, 17,
@@ -32,7 +32,7 @@ public class LineIndicator : Singleton<LineIndicator>
         63, 64, 65, 66, 67, 68, 69, 70, 71,
         72, 73, 74, 75, 76, 77, 78, 79, 80
     };
-    private int[,] square_data = new int[9, 9]  // get a square 3x3
+    private int[,] square_data = new int[9, 9]
     {
         {  0,  1,  2,   9, 10, 11,  18, 19, 20 },
         {  3,  4,  5,  12, 13, 14,  21, 22, 23 },

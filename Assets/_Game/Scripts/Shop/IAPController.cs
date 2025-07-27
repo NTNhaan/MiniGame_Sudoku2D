@@ -6,6 +6,7 @@ using UnityEngine.Purchasing.Extension;
 using UnityEngine.Events;
 using Unity.Services.Core;
 using System.Threading.Tasks;
+using Utils;
 
 [System.Serializable]
 public class ItemIap
@@ -16,29 +17,16 @@ public class ItemIap
 
 public class IAPController : Singleton<IAPController>, IStoreListener
 {
-    private static IAPController instance;
     private IStoreController storeController;
     private IExtensionProvider storeExtensionProvider;
     [SerializeField] private List<ItemIap> lstKeyCode;
     [SerializeField] private bool isInitialized = false;
-    public static IAPController Instance => instance;
 
     public UnityAction<string> OnPurchaseSuccess;
     public UnityAction<string, PurchaseFailureReason> OnPurchaseFailedAction;
 
     private void Awake()
     {
-        if (instance == null)
-        {
-            instance = this;
-            DontDestroyOnLoad(gameObject);
-        }
-        else
-        {
-            Destroy(gameObject);
-            return;
-        }
-
         InitializeUnityGamingServices();
         InitializePurchasing();
     }
@@ -148,6 +136,6 @@ public class IAPController : Singleton<IAPController>, IStoreListener
     {
         Debug.LogError("Unity IAP Initialization Failed: " + error + " Message: " + message);
         IsInitialized();
-       // throw new NotImplementedException();
+        // throw new NotImplementedException();
     }
 }

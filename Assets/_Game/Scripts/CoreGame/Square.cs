@@ -4,7 +4,6 @@ using System.Collections.Generic;
 using UnityEngine.UI;
 using UnityEngine.Events;
 using UnityEngine.EventSystems;
-using Unity.VisualScripting;
 public class Square : Selectable, IPointerClickHandler, ISubmitHandler, IPointerEnterHandler, IPointerExitHandler
 {
     [SerializeField] private Text textNumber;
@@ -109,8 +108,6 @@ public class Square : Selectable, IPointerClickHandler, ISubmitHandler, IPointer
         isSelected = true;
         EventManager.SquareSeleced(square_index);
         AudioController.Instance.PlayClickSound();
-
-        // Debug feature: Show correct number when square is selected
         if (GameManager.instance != null && GameManager.instance.ShowCorrectNumberDebug)
         {
             string debugInfo = $"Square {square_index}: Current={number}, Correct={correctNumber}";
@@ -134,17 +131,14 @@ public class Square : Selectable, IPointerClickHandler, ISubmitHandler, IPointer
             Debug.Log($"[DEBUG] {debugInfo}");
         }
     }
-    public void OnSubmit(BaseEventData eventData)
-    {
-
-    }
+    public void OnSubmit(BaseEventData eventData) { }
     public void OnSetNumber(int number)
     {
-        if (isSelected && !hasDefaultValue)  // Removed !hasWrongValue condition
+        if (isSelected && !hasDefaultValue)
         {
             SaveCurrentState();
 
-            if (isNoteActive)  // Removed !hasWrongValue condition
+            if (isNoteActive)
             {
                 SetNoteSingleNumberValue(number);
             }
@@ -177,7 +171,6 @@ public class Square : Selectable, IPointerClickHandler, ISubmitHandler, IPointer
                         AudioController.Instance.PlayRightNumberSound();
                     }
 
-                    // Check if puzzle is completed after setting correct number
                     if (BoardController.Instance != null)
                     {
                         BoardController.Instance.CheckPuzzleComplete();
@@ -280,57 +273,40 @@ public class Square : Selectable, IPointerClickHandler, ISubmitHandler, IPointer
     #region Erase Booster Region
     public void OnClearNumber()
     {
-        Debug.Log($"Square {square_index}: OnClearNumber attempt - isSelected: {isSelected}, hasDefaultValue: {hasDefaultValue}, number: {number}, correctNumber: {correctNumber}");
-
-        // Kiểm tra square có được select và không phải default value
+        #region Debug info
         if (!isSelected)
         {
             Debug.Log($"Square {square_index}: Cannot clear - not selected");
             return;
         }
-
         if (hasDefaultValue)
         {
             Debug.Log($"Square {square_index}: Cannot clear - is default value");
 
-            // Visual feedback - flash red briefly để báo không thể xóa
             StartCoroutine(FlashCannotEraseEffect());
             return;
         }
-
-        // Check if player has enough coins for erase
         if (!GameManager.instance.CanAfford(GameManager.instance.GetEraseCost()))
         {
             Debug.Log($"Square {square_index}: Not enough coins for erase!");
-            // You can add UI notification here
             return;
         }
-
-        // Spend coins for erase
         if (!GameManager.instance.SpendCoins(GameManager.instance.GetEraseCost()))
         {
             Debug.Log($"Square {square_index}: Failed to spend coins for erase");
             return;
         }
-
-        // Additional check: Nếu number = correctNumber và có số != 0, 
-        // có thể đây là original default mà flag bị sai
         if (number != 0 && number == correctNumber)
         {
             Debug.LogWarning($"Square {square_index}: WARNING - This might be a default number! number: {number}, correct: {correctNumber}");
-            // Optional: có thể block luôn hoặc cảnh báo
         }
-
-        // Lưu trạng thái trước khi clear
+        #endregion
         SaveCurrentState();
 
-        // Đăng ký với BoardController trước khi clear
         if (BoardController.Instance != null)
         {
             BoardController.Instance.RegisterUndoState(this);
         }
-
-        // Clear number
         number = 0;
         hasWrongValue = false;
         isSelected = false;
@@ -340,8 +316,6 @@ public class Square : Selectable, IPointerClickHandler, ISubmitHandler, IPointer
         DisplayText();
 
         Debug.Log($"Square {square_index}: Number cleared successfully");
-
-        // Play erase sound
         if (AudioController.Instance != null)
         {
             AudioController.Instance.PlayEraseSound();
@@ -358,12 +332,8 @@ public class Square : Selectable, IPointerClickHandler, ISubmitHandler, IPointer
         previousBackgroundColor = colors.normalColor;
     }
 
-    /// <summary>
-    /// Undo action được gọi từ UndoManager, không cần select square
-    /// </summary>
     public void UndoLastAction()
     {
-        // Không cần kiểm tra isSelected, undo được gọi từ UndoManager
         if (!hasDefaultValue)
         {
             number = previousNumber;
@@ -380,7 +350,6 @@ public class Square : Selectable, IPointerClickHandler, ISubmitHandler, IPointer
 
             Debug.Log($"Undo: Square {square_index} restored to number {previousNumber}");
 
-            // Play undo sound
             if (AudioController.Instance != null)
             {
                 AudioController.Instance.PlayUndoSound();
@@ -388,9 +357,6 @@ public class Square : Selectable, IPointerClickHandler, ISubmitHandler, IPointer
         }
     }
 
-    /// <summary>
-    /// Restore square từ undo state - được gọi từ BoardController
-    /// </summary>
     public void RestoreState(int restoreNumber, bool restoreWrongValue, Color restoreTextColor, Color restoreBackgroundColor)
     {
         if (!hasDefaultValue)
@@ -406,8 +372,6 @@ public class Square : Selectable, IPointerClickHandler, ISubmitHandler, IPointer
             {
                 SetNotesNumberValue(0);
             }
-
-            Debug.Log($"Square {square_index}: Restored to number {restoreNumber}");
         }
     }
     public void OnUndoNumber()
@@ -425,43 +389,26 @@ public class Square : Selectable, IPointerClickHandler, ISubmitHandler, IPointer
             {
                 SetNotesNumberValue(0);
             }
-
-            Debug.Log($"Undo: Square {square_index} restored to number {previousNumber}");
         }
     }
-
-    /// <summary>
-    /// Coroutine để flash màu đỏ khi không thể erase default value
-    /// </summary>
     private System.Collections.IEnumerator FlashCannotEraseEffect()
     {
         Color originalColor = colors.normalColor;
 
-        // Flash red
         SetColor(Color.red);
         yield return new WaitForSeconds(0.1f);
 
-        // Back to original
         SetColor(originalColor);
         yield return new WaitForSeconds(0.1f);
 
-        // Flash red again
         SetColor(Color.red);
         yield return new WaitForSeconds(0.1f);
 
-        // Back to original
         SetColor(originalColor);
     }
 
-    /// <summary>
-    /// Validate xem default value flag có consistent không
-    /// </summary>
     public bool ValidateDefaultValue()
     {
-        // Nếu được mark là default, phải là số từ board data gốc
-        // (không thể validate vì không có access vào original unsolved_data ở đây)
-        // Chỉ có thể kiểm tra logic cơ bản
-
         if (hasDefaultValue && number == 0)
         {
             Debug.LogError($"Square {square_index}: INVALID - marked as default but number is 0");

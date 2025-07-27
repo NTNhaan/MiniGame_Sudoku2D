@@ -162,25 +162,15 @@ public class BoardController : Singleton<BoardController>
 
         if (remainingHints <= 0)
         {
-            // Kiểm tra xem người chơi có đủ coins để mua hint không
             if (!GameManager.instance.CanAfford(GameManager.instance.GetHintCost()))
             {
-                Debug.Log($"Not enough coins to buy hint! Need {HINT_COST} coins");
-                EventManager.ShowNotEnoughCoinsMessage(HINT_COST); // Thông báo không đủ tiền
+                EventManager.ShowNotEnoughCoinsMessage(HINT_COST);
                 return;
             }
-
-            // Nếu đủ tiền, trừ coins và tiếp tục sử dụng hint
             if (!GameManager.instance.SpendCoins(GameManager.instance.GetHintCost()))
             {
                 return;
             }
-
-            Debug.Log($"Bought hint for {HINT_COST} coins");
-        }
-        else
-        {
-            Debug.Log($"Using free hint. Remaining: {remainingHints - 1}");
         }
 
         var availableSquares = new List<int>();
@@ -232,15 +222,12 @@ public class BoardController : Singleton<BoardController>
 
         remainingHints--;
 
-        Debug.Log($"BoardController: Hint used, remainingHints = {remainingHints}");
         EventManager.HintCountChanged();
 
         if (AudioController.Instance != null)
         {
             AudioController.Instance.PlayRightNumberSound();
         }
-
-        // Check if puzzle is completed after hint
         CheckPuzzleComplete();
     }
     private void ClearHintHighlight()
@@ -284,24 +271,14 @@ public class BoardController : Singleton<BoardController>
     {
         Debug.Log("Level Complete!");
 
-        // Reward coins for completing level
-        int coinReward = 50; // Base reward
+        int coinReward = 50;
         GameManager.instance.AddCoins(coinReward);
         Debug.Log($"Level completed! Earned {coinReward} coins");
 
-        // Get current level information for popup
         string levelInfo = GetCurrentLevelInfo();
-
-        // Trigger level completed event with level info
         EventManager.LevelCompleted(levelInfo);
+        AudioController.Instance.PlayWinSound();
 
-        // Play win sound
-        if (AudioController.Instance != null)
-        {
-            AudioController.Instance.PlayWinSound();
-        }
-
-        // Don't auto advance level - let user click Next Level button
         // bool hasNextLevel = GameConfigSetting.Instance.AdvanceToNextLevel();
         // if (hasNextLevel)
         // {
@@ -320,13 +297,12 @@ public class BoardController : Singleton<BoardController>
             string currentDifficulty = GameConfigSetting.Instance.GetCurrentDifficulty();
             int currentSubLevel = GameConfigSetting.Instance.GetCurrentSubLevel();
 
-            // Calculate total level number
             int totalLevel = CalculateTotalLevelFromProgression(currentDifficulty, currentSubLevel);
 
             var allLevels = FixedSudokuLevelData.GetAllLevels();
             if (totalLevel > 0 && totalLevel <= allLevels.Count)
             {
-                var levelData = allLevels[totalLevel - 1]; // Convert to 0-based index
+                var levelData = allLevels[totalLevel - 1];
                 return $"Level {levelData.levelId} - {levelData.difficulty} Completed!";
             }
             else
@@ -358,7 +334,7 @@ public class BoardController : Singleton<BoardController>
                 break;
         }
 
-        return baseLevel + subLevel + 1; // +1 because levels are 1-based
+        return baseLevel + subLevel + 1;
     }
 
     private int GetTotalSubLevelsForDifficulty(string difficulty)
@@ -367,7 +343,7 @@ public class BoardController : Singleton<BoardController>
         {
             return LevelData.Instance.gameDir[difficulty].Count;
         }
-        return 2; // Default fallback
+        return 2;
     }
 
     private void LoadNextLevel()
@@ -377,10 +353,6 @@ public class BoardController : Singleton<BoardController>
 
         ResetBoardState();
     }
-
-    /// <summary>
-    /// Public method to load a specific level (called from UI)
-    /// </summary>
     public void LoadLevel(string difficulty)
     {
         SetBoardNumber(difficulty);
@@ -396,12 +368,6 @@ public class BoardController : Singleton<BoardController>
         {
             square.SetColor(Color.white);
         }
-    }
-
-    private void OnGameComplete()
-    {
-        Debug.Log("GAME COMPLETED! All levels finished!");
-
     }
 
     #endregion
@@ -437,15 +403,12 @@ public class BoardController : Singleton<BoardController>
     {
         if (undoStack.Count > 0)
         {
-            // Check if player has enough coins
             if (!GameManager.instance.CanAfford(GameManager.instance.GetUndoCost()))
             {
                 Debug.Log("Not enough coins for undo!");
-                // You can add UI notification here
                 return;
             }
 
-            // Spend coins for undo
             if (GameManager.instance.SpendCoins(GameManager.instance.GetUndoCost()))
             {
                 var undoState = undoStack.Pop();
@@ -476,13 +439,11 @@ public class BoardController : Singleton<BoardController>
 
     public int GetHintCount()
     {
-        Debug.Log($"BoardController: GetHintCount called, returning {remainingHints}");
         return remainingHints;
     }
     public void ClearUndoHistory()
     {
         undoStack.Clear();
-        Debug.Log("BoardController: Xoa du lieu stack undo");
         EventManager.UndoCountChanged();
     }
     #endregion
@@ -498,48 +459,38 @@ public class BoardController : Singleton<BoardController>
         return remainingHints > 0;
     }
 
-    public void DebugShowDefaultSquares()
-    {
-        Debug.Log("=== DEFAULT SQUARES DEBUG ===");
-        for (int i = 0; i < lstSquareComponents.Count; i++)
-        {
-            var square = lstSquareComponents[i];
-            if (square.GetHasDefaultValue())
-            {
-                Debug.Log($"Square {i}: DEFAULT - Number: {square.GetNumber()}, Correct: {square.GetCorrectNumber()}");
-            }
-        }
-        Debug.Log("=== END DEBUG ===");
-    }
+    // public void DebugShowDefaultSquares()
+    // {
+    //     for (int i = 0; i < lstSquareComponents.Count; i++)
+    //     {
+    //         var square = lstSquareComponents[i];
+    //         if (square.GetHasDefaultValue())
+    //         {
+    //             Debug.Log($"Square {i}: DEFAULT - Number: {square.GetNumber()}, Correct: {square.GetCorrectNumber()}");
+    //         }
+    //     }
+    //     Debug.Log("=== END DEBUG ===");
+    // }
 
     public List<Square> GetSquareComponents()
     {
         return lstSquareComponents;
     }
 
-    /// <summary>
-    /// Check if puzzle is completed
-    /// </summary>
     public void CheckPuzzleComplete()
     {
         if (currentBoardData == null) return;
 
-        // Check if all squares have correct numbers
         for (int i = 0; i < lstSquareComponents.Count; i++)
         {
             var square = lstSquareComponents[i];
             int currentNumber = square.GetNumber();
             int correctNumber = currentBoardData.solved_data[i];
-
-            // If any square is empty (0) or has wrong number, puzzle is not complete
             if (currentNumber == 0 || currentNumber != correctNumber)
             {
-                return; // Puzzle not complete yet
+                return;
             }
         }
-
-        // If we reach here, all squares have correct numbers
-        Debug.Log("Puzzle Complete! All squares filled correctly!");
         EventManager.PuzzleComplete();
     }
     [ContextMenu("Toggle Debug Mode")]
@@ -550,19 +501,12 @@ public class BoardController : Singleton<BoardController>
             GameManager.instance.ToggleDebugMode();
         }
     }
-
-    /// <summary>
-    /// Debug method to manually trigger puzzle complete check
-    /// </summary>
     [ContextMenu("Check Puzzle Complete")]
     public void DebugCheckPuzzleComplete()
     {
         CheckPuzzleComplete();
     }
 
-    /// <summary>
-    /// Debug method to show puzzle completion status
-    /// </summary>
     [ContextMenu("Show Puzzle Status")]
     public void DebugShowPuzzleStatus()
     {
@@ -584,15 +528,7 @@ public class BoardController : Singleton<BoardController>
             bool isCorrect = currentNumber != 0 && currentNumber == correctNumber;
 
             if (isCorrect) correctCount++;
-
-            if (!isCorrect)
-            {
-                Debug.Log($"Square {i}: Current={currentNumber}, Correct={correctNumber} - {(currentNumber == 0 ? "EMPTY" : "WRONG")}");
-            }
         }
-
-        Debug.Log($"Progress: {correctCount}/{totalSquares} squares correct ({(float)correctCount / totalSquares * 100:F1}%)");
-        Debug.Log("=== END STATUS ===");
     }
     #endregion
 }

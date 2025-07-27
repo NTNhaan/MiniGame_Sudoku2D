@@ -6,7 +6,6 @@ using UnityEngine.UI;
 using UnityEngine.SceneManagement;
 using UnityEngine.SocialPlatforms.Impl;
 using System.Linq;
-using Unity.VisualScripting;
 
 public class UIManager : MonoBehaviour
 {
@@ -15,7 +14,7 @@ public class UIManager : MonoBehaviour
     public Text HealthPlayer;
     // public Text PanelScoreText;
     // public Text HighScoreText;
-    [SerializeField] private GameObject imgCover;
+    // [SerializeField] private GameObject imgCover;
     [SerializeField] private GameManager scoreManager;
     [SerializeField] private GameObject PopupShopIAP;
     [SerializeField] private GameObject PopupWin;
@@ -117,7 +116,6 @@ public class UIManager : MonoBehaviour
         yield return new WaitForSeconds(2f);
         if (notEnoughCoinsPopup != null)
         {
-            // Chỉ ẩn/hiện popup dựa trên số hint còn lại
             UpdateHintCount();
         }
     }
@@ -155,7 +153,7 @@ public class UIManager : MonoBehaviour
 
     void ShowGameOverUI()
     {
-        ShowCoverImg(true);
+        // ShowCoverImg(true);
         Debug.Log("Game Over UI - Cover image shown");
     }
     void UpdateScoreText(int score)
@@ -227,7 +225,7 @@ public class UIManager : MonoBehaviour
                 break;
         }
 
-        return baseLevel + subLevel + 1; // +1 because levels are 1-based
+        return baseLevel + subLevel + 1;
     }
 
     private int GetTotalSubLevelsForDifficulty(string difficulty)
@@ -236,7 +234,7 @@ public class UIManager : MonoBehaviour
         {
             return LevelData.Instance.gameDir[difficulty].Count;
         }
-        return 2; // Default fallback
+        return 2;
     }
 
     private int GetTotalSubLevelsForCurrentDifficulty()
@@ -271,8 +269,6 @@ public class UIManager : MonoBehaviour
         {
             int hintCount = BoardController.Instance.GetHintCount();
             HintCountTxt.text = hintCount.ToString();
-
-            // Khi hint = 0, hiển thị notEnoughCoinsPopup và ẩn EnoughCoinsPopup
             if (hintCount <= 0)
             {
                 if (notEnoughCoinsPopup != null && EnoughCoinsPopup != null)
@@ -287,7 +283,6 @@ public class UIManager : MonoBehaviour
             }
             else
             {
-                // Khi còn hint, hiển thị EnoughCoinsPopup và ẩn notEnoughCoinsPopup
                 if (notEnoughCoinsPopup != null && EnoughCoinsPopup != null)
                 {
                     EnoughCoinsPopup.SetActive(true);
@@ -337,11 +332,9 @@ public class UIManager : MonoBehaviour
     [ContextMenu("Force Update All UI")]
     public void ForceUpdateAllUI()
     {
-        Debug.Log("Force updating all UI elements...");
         UpdateLevelText();
         UpdateHintCount();
         UpdateCoinCount();
-        Debug.Log("All UI elements updated");
     }
 
     public void UpdateDebugDisplay(int squareIndex)
@@ -350,7 +343,6 @@ public class UIManager : MonoBehaviour
         {
             if (squareIndex >= 0 && BoardController.Instance != null)
             {
-                // Get the selected square component
                 var squares = BoardController.Instance.GetSquareComponents();
                 if (squares != null && squareIndex < squares.Count)
                 {
@@ -379,31 +371,31 @@ public class UIManager : MonoBehaviour
 
 
     #region On Click Popup Region
-    public void ShowCoverImg(bool enabled)
-    {
-        imgCover.SetActive(enabled);
-    }
+    // public void ShowCoverImg(bool enabled)
+    // {
+    //     imgCover.SetActive(enabled);
+    // }
     public void OnCLickShowShopIAP()
     {
         AudioController.Instance.PlayClickSound();
-        ShowCoverImg(true);
+        // ShowCoverImg(true);
         PopupShopIAP.SetActive(true);
     }
     public void OnClickHideShopIAP()
     {
         AudioController.Instance.PlayClickSound();
-        ShowCoverImg(false);
+        // ShowCoverImg(false);
         PopupShopIAP.SetActive(false);
     }
     public void OnClickShowPopupWin()
     {
         AudioController.Instance.PlayWinSound();
-        ShowCoverImg(true);
+        // ShowCoverImg(true);
         PopupWin.SetActive(true);
     }
     public void OnClickHidePopupWin()
     {
-        ShowCoverImg(false);
+        // ShowCoverImg(false);
         PopupWin.SetActive(false);
     }
 
@@ -450,7 +442,7 @@ public class UIManager : MonoBehaviour
         }
 
         HideWinPopup();
-        ShowCoverImg(false);
+        // ShowCoverImg(false);
 
         if (GameConfigSetting.Instance != null)
         {
@@ -517,7 +509,7 @@ public class UIManager : MonoBehaviour
             Debug.Log("Restarted current level");
         }
         HideWinPopup();
-        ShowCoverImg(false);
+        // ShowCoverImg(false);
     }
     // public void PauseGame()
     // {

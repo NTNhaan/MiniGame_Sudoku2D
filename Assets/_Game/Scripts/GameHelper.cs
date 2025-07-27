@@ -7,7 +7,6 @@ public class GameHelper : Singleton<GameHelper>
     [SerializeField] private GameManager gameManager;
     [SerializeField] private Timmer timer;
     [SerializeField] private UIManager UImanager;
-
     public BoardController BoardController { get => boardController; }
     public GameManager GameManager { get => gameManager; }
     public Timmer Timmer { get => timer; }
